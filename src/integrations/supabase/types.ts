@@ -245,6 +245,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_super_admin: { Args: never; Returns: undefined }
       current_role_name: { Args: never; Returns: string }
       has_role: {
         Args: {
@@ -253,6 +254,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      super_admin_exists: { Args: never; Returns: boolean }
     }
     Enums: {
       app_role: "super_admin" | "restaurant_admin"
