@@ -19,12 +19,13 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminShell,
 });
 
-const NAV = [
+type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean };
+const NAV: NavItem[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/restaurants", label: "Restaurants", icon: Store },
   { to: "/admin/restaurants/new", label: "Create Restaurant", icon: PlusCircle },
   { to: "/admin/qr", label: "QR Manager", icon: QrCode },
-] as const;
+];
 
 function AdminShell() {
   const navigate = useNavigate();
