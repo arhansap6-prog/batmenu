@@ -38,7 +38,7 @@ function PublicMenu() {
   const { restaurant, categories, items } = Route.useLoaderData();
   const [pageIdx, setPageIdx] = useState(0); // 0 = cover, 1..N = categories
   const [touchStart, setTouchStart] = useState<number | null>(null);
-  const pages = ["cover", ...categories.map((c) => c.id)];
+  const pages = ["cover", ...categories.map((c: { id: string }) => c.id)];
   const total = pages.length;
 
   useEffect(() => {
@@ -68,7 +68,7 @@ function PublicMenu() {
         ) : (
           <CategoryPage
             category={categories[pageIdx - 1]}
-            items={items.filter((i) => i.category_id === categories[pageIdx - 1].id)}
+            items={items.filter((i: { category_id: string }) => i.category_id === categories[pageIdx - 1].id)}
             index={pageIdx}
             total={categories.length}
             r={restaurant}

@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MSlugRouteImport } from './routes/m.$slug'
+import { Route as AuthenticatedMyMenuRouteImport } from './routes/_authenticated/my-menu'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminQrRouteImport } from './routes/_authenticated/admin.qr'
@@ -32,6 +34,16 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const MSlugRoute = MSlugRouteImport.update({
+  id: '/m/$slug',
+  path: '/m/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedMyMenuRoute = AuthenticatedMyMenuRouteImport.update({
+  id: '/my-menu',
+  path: '/my-menu',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
@@ -71,6 +83,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/my-menu': typeof AuthenticatedMyMenuRoute
+  '/m/$slug': typeof MSlugRoute
   '/admin/qr': typeof AuthenticatedAdminQrRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/restaurants/$id': typeof AuthenticatedAdminRestaurantsIdRoute
@@ -80,6 +94,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/my-menu': typeof AuthenticatedMyMenuRoute
+  '/m/$slug': typeof MSlugRoute
   '/admin/qr': typeof AuthenticatedAdminQrRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/restaurants/$id': typeof AuthenticatedAdminRestaurantsIdRoute
@@ -92,6 +108,8 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/my-menu': typeof AuthenticatedMyMenuRoute
+  '/m/$slug': typeof MSlugRoute
   '/_authenticated/admin/qr': typeof AuthenticatedAdminQrRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/restaurants/$id': typeof AuthenticatedAdminRestaurantsIdRoute
@@ -104,6 +122,8 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/admin'
+    | '/my-menu'
+    | '/m/$slug'
     | '/admin/qr'
     | '/admin/'
     | '/admin/restaurants/$id'
@@ -113,6 +133,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/my-menu'
+    | '/m/$slug'
     | '/admin/qr'
     | '/admin'
     | '/admin/restaurants/$id'
@@ -124,6 +146,8 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/admin'
+    | '/_authenticated/my-menu'
+    | '/m/$slug'
     | '/_authenticated/admin/qr'
     | '/_authenticated/admin/'
     | '/_authenticated/admin/restaurants/$id'
@@ -135,6 +159,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  MSlugRoute: typeof MSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -159,6 +184,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/m/$slug': {
+      id: '/m/$slug'
+      path: '/m/$slug'
+      fullPath: '/m/$slug'
+      preLoaderRoute: typeof MSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/my-menu': {
+      id: '/_authenticated/my-menu'
+      path: '/my-menu'
+      fullPath: '/my-menu'
+      preLoaderRoute: typeof AuthenticatedMyMenuRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
@@ -227,10 +266,12 @@ const AuthenticatedAdminRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedMyMenuRoute: typeof AuthenticatedMyMenuRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedMyMenuRoute: AuthenticatedMyMenuRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -240,6 +281,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  MSlugRoute: MSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
