@@ -91,7 +91,6 @@ function PublicMenu() {
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_40%_at_50%_100%,rgba(0,0,0,0.08),transparent_70%)]" />
 
       <div className="relative w-full max-w-[1100px] flex-1 flex items-center justify-center">
-        {/* @ts-expect-error react-pageflip types are loose */}
         <HTMLFlipBook
           ref={bookRef}
           width={isMobile ? 340 : 500}
