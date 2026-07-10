@@ -1,6 +1,9 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
+import HTMLFlipBook from "react-pageflip";
 import { supabase } from "@/integrations/supabase/client";
+import { BatLogo } from "@/lib/brand";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/m/$slug")({
   ssr: false,
@@ -13,7 +16,6 @@ export const Route = createFileRoute("/m/$slug")({
       supabase.from("categories").select("*").eq("restaurant_id", r.id).eq("hidden", false).order("sort_order"),
       supabase.from("menu_items").select("*").eq("restaurant_id", r.id).eq("available", true).order("sort_order"),
     ]);
-    // Log scan (best-effort)
     supabase.from("qr_scans").insert({ restaurant_id: r.id }).then(() => {}, () => {});
     return { restaurant: r, categories: cats.data ?? [], items: items.data ?? [] };
   },
@@ -28,150 +30,277 @@ export const Route = createFileRoute("/m/$slug")({
   }),
   notFoundComponent: () => (
     <div className="flex min-h-dvh items-center justify-center px-4 text-center">
-      <div className="glass rounded-3xl p-8"><p className="text-sm text-muted-foreground">This menu is not available.</p></div>
+      <div className="card-luxe rounded-3xl p-8"><p className="text-sm text-muted-foreground">This menu is not available.</p></div>
     </div>
   ),
   component: PublicMenu,
 });
 
+const ITEMS_PER_PAGE = 5;
+
+type PageKind =
+  | { kind: "cover"; r: any }
+  | { kind: "category"; category: any; items: any[]; part: number; totalParts: number; r: any }
+  | { kind: "back"; r: any };
+
 function PublicMenu() {
   const { restaurant, categories, items } = Route.useLoaderData();
-  const [pageIdx, setPageIdx] = useState(0); // 0 = cover, 1..N = categories
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const pages = ["cover", ...categories.map((c: { id: string }) => c.id)];
-  const total = pages.length;
+  const bookRef = useRef<any>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
 
   useEffect(() => {
-    document.documentElement.style.setProperty("--rest-primary", restaurant.primary_color);
-    document.documentElement.style.setProperty("--rest-secondary", restaurant.secondary_color);
-  }, [restaurant]);
+    const mq = window.matchMedia("(max-width: 768px)");
+    const on = () => setIsMobile(mq.matches);
+    on();
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
 
-  function goto(i: number) { setPageIdx(Math.max(0, Math.min(total - 1, i))); }
+  const pages = useMemo<PageKind[]>(() => {
+    const out: PageKind[] = [{ kind: "cover", r: restaurant }];
+    categories.forEach((c: any) => {
+      const catItems = items.filter((i: any) => i.category_id === c.id);
+      const parts = Math.max(1, Math.ceil(catItems.length / ITEMS_PER_PAGE));
+      for (let p = 0; p < parts; p++) {
+        out.push({
+          kind: "category",
+          category: c,
+          items: catItems.slice(p * ITEMS_PER_PAGE, (p + 1) * ITEMS_PER_PAGE),
+          part: p + 1,
+          totalParts: parts,
+          r: restaurant,
+        });
+      }
+    });
+    out.push({ kind: "back", r: restaurant });
+    return out;
+  }, [restaurant, categories, items]);
+
+  function flipPrev() { bookRef.current?.pageFlip()?.flipPrev(); }
+  function flipNext() { bookRef.current?.pageFlip()?.flipNext(); }
 
   return (
-    <div className="relative min-h-dvh overflow-hidden"
-      onTouchStart={(e) => setTouchStart(e.touches[0].clientX)}
-      onTouchEnd={(e) => {
-        if (touchStart == null) return;
-        const dx = e.changedTouches[0].clientX - touchStart;
-        if (dx > 40) goto(pageIdx - 1);
-        if (dx < -40) goto(pageIdx + 1);
-        setTouchStart(null);
-      }}>
-      {/* Backdrop from theme */}
-      <div className="absolute inset-0 -z-10"
-        style={{ background: `radial-gradient(120% 80% at 50% 0%, ${restaurant.primary_color}22, ${restaurant.secondary_color} 60%)` }} />
+    <div
+      className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-2 py-4 sm:px-6"
+      style={{
+        background: `radial-gradient(120% 80% at 50% 0%, ${restaurant.primary_color}12, oklch(0.965 0.003 260) 55%)`,
+      }}
+    >
+      {/* Subtle stage */}
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_40%_at_50%_100%,rgba(0,0,0,0.08),transparent_70%)]" />
 
-      <div className="mx-auto max-w-3xl px-4 pb-32 pt-8 sm:px-6">
-        {pageIdx === 0 ? (
-          <CoverPage r={restaurant} onStart={() => goto(1)} hasMenu={categories.length > 0} />
-        ) : (
-          <CategoryPage
-            category={categories[pageIdx - 1]}
-            items={items.filter((i: { category_id: string }) => i.category_id === categories[pageIdx - 1].id)}
-            index={pageIdx}
-            total={categories.length}
-            r={restaurant}
-          />
+      <div className="relative w-full max-w-[1100px] flex-1 flex items-center justify-center">
+        <HTMLFlipBook
+          ref={bookRef}
+          width={isMobile ? 340 : 500}
+          height={isMobile ? 520 : 680}
+          size="stretch"
+          minWidth={300}
+          maxWidth={560}
+          minHeight={440}
+          maxHeight={760}
+          showCover={true}
+          drawShadow={true}
+          flippingTime={800}
+          usePortrait={isMobile}
+          mobileScrollSupport={false}
+          maxShadowOpacity={0.35}
+          className="book-shadow"
+          style={{}}
+          startPage={0}
+          startZIndex={0}
+          autoSize={true}
+          clickEventForward={true}
+          useMouseEvents={true}
+          swipeDistance={30}
+          showPageCorners={true}
+          disableFlipByClick={false}
+          onFlip={(e: any) => setCurrentPage(e.data)}
+        >
+          {pages.map((p, idx) => (
+            <Page key={idx} number={idx + 1} total={pages.length}>
+              {renderPage(p)}
+            </Page>
+          ))}
+        </HTMLFlipBook>
+      </div>
+
+      {/* Bottom controls */}
+      <div className="mt-6 flex items-center gap-4">
+        <button
+          onClick={flipPrev}
+          disabled={currentPage === 0}
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-white/80 backdrop-blur transition hover:bg-white disabled:opacity-30"
+          aria-label="Previous page"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+        <div className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground tabular-nums">
+          {String(currentPage + 1).padStart(2, "0")} <span className="opacity-40">/</span> {String(pages.length).padStart(2, "0")}
+        </div>
+        <button
+          onClick={flipNext}
+          disabled={currentPage >= pages.length - 1}
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-border bg-white/80 backdrop-blur transition hover:bg-white disabled:opacity-30"
+          aria-label="Next page"
+        >
+          <ChevronRight className="h-5 w-5" />
+        </button>
+      </div>
+
+      <p className="mt-3 text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70">
+        Tap the page edge or swipe to turn
+      </p>
+    </div>
+  );
+}
+
+const Page = forwardRef<HTMLDivElement, { number: number; total: number; children: React.ReactNode }>(
+  function Page({ children, number }, ref) {
+    return (
+      <div
+        ref={ref}
+        className="relative h-full w-full overflow-hidden bg-[oklch(0.985_0.003_90)] text-[oklch(0.12_0.006_260)]"
+        style={{
+          backgroundImage:
+            "linear-gradient(180deg, oklch(0.99 0.003 90) 0%, oklch(0.97 0.004 90) 100%)",
+        }}
+        data-density="hard"
+      >
+        {/* Paper grain */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.05] mix-blend-multiply"
+          style={{
+            backgroundImage:
+              "radial-gradient(oklch(0 0 0) 1px, transparent 1px), radial-gradient(oklch(0 0 0) 1px, transparent 1px)",
+            backgroundSize: "3px 3px, 5px 5px",
+            backgroundPosition: "0 0, 1px 1px",
+          }}
+        />
+        {/* Inner fold shadow */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-6 bg-gradient-to-r from-black/10 to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-black/10 to-transparent" />
+        <div className="relative h-full w-full">{children}</div>
+      </div>
+    );
+  }
+);
+
+function renderPage(p: PageKind) {
+  if (p.kind === "cover") return <CoverPage r={p.r} />;
+  if (p.kind === "back") return <BackPage r={p.r} />;
+  return <CategoryPage {...p} />;
+}
+
+function CoverPage({ r }: { r: any }) {
+  return (
+    <div className="flex h-full flex-col items-center justify-between p-8 text-center">
+      <div className="w-full">
+        {r.banner_url && (
+          <div className="mb-6 h-32 w-full overflow-hidden rounded-2xl ring-1 ring-black/10">
+            <img src={r.banner_url} alt="" className="h-full w-full object-cover" />
+          </div>
         )}
       </div>
-
-      {/* Navigation */}
-      <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-black/40 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
-          <button onClick={() => goto(pageIdx - 1)} disabled={pageIdx === 0}
-            className="rounded-full border border-white/15 px-3 py-1.5 text-xs disabled:opacity-40">← Prev</button>
-          <div className="flex-1 overflow-x-auto">
-            <div className="flex justify-center gap-1.5">
-              {pages.map((_, i) => (
-                <button key={i} onClick={() => goto(i)}
-                  className={`h-1.5 rounded-full transition-all ${i === pageIdx ? "w-6 bg-[color:var(--rest-primary)]" : "w-1.5 bg-white/25"}`}
-                  aria-label={`Page ${i + 1}`} />
-              ))}
-            </div>
-          </div>
-          <button onClick={() => goto(pageIdx + 1)} disabled={pageIdx === total - 1}
-            className="rounded-full border border-white/15 px-3 py-1.5 text-xs disabled:opacity-40">Next →</button>
-        </div>
-      </nav>
+      <div className="flex flex-1 flex-col items-center justify-center">
+        {r.logo_url ? (
+          <img src={r.logo_url} alt="" className="mb-6 h-20 w-20 rounded-full object-cover ring-2 ring-black/10" />
+        ) : (
+          <BatLogo className="mb-6 h-14 w-14 text-black/80" />
+        )}
+        <div className="text-[10px] uppercase tracking-[0.4em] text-black/50">Menu</div>
+        <h1 className="mt-4 font-display text-4xl leading-tight sm:text-5xl" style={{ color: r.primary_color }}>
+          {r.name}
+        </h1>
+        {r.welcome_message && (
+          <p className="mt-4 max-w-[26ch] text-sm leading-relaxed text-black/60">{r.welcome_message}</p>
+        )}
+      </div>
+      <div className="w-full">
+        {r.opening_hours && (
+          <p className="text-[10px] uppercase tracking-[0.3em] text-black/40">{r.opening_hours}</p>
+        )}
+        <div className="mx-auto mt-3 h-px w-16 bg-black/20" />
+        <p className="mt-3 text-[10px] uppercase tracking-[0.3em] text-black/40">Presented by BAT MENU</p>
+      </div>
     </div>
   );
 }
 
-function CoverPage({ r, onStart, hasMenu }: { r: any; onStart: () => void; hasMenu: boolean }) {
-  return (
-    <div className="flex min-h-[80vh] flex-col items-center justify-center text-center">
-      {r.banner_url && (
-        <div className="mb-6 h-40 w-full overflow-hidden rounded-3xl ring-1 ring-white/10 sm:h-56">
-          <img src={r.banner_url} alt="" className="h-full w-full object-cover" />
-        </div>
-      )}
-      {r.logo_url && <img src={r.logo_url} alt="" className="mb-4 h-20 w-20 rounded-full object-cover ring-2 ring-white/15" />}
-      <h1 className="font-display text-4xl sm:text-5xl" style={{ color: "var(--rest-primary)" }}>{r.name}</h1>
-      {r.welcome_message && <p className="mt-3 max-w-md text-sm text-white/70">{r.welcome_message}</p>}
-      {r.opening_hours && <p className="mt-2 text-xs uppercase tracking-widest text-white/50">{r.opening_hours}</p>}
-      {hasMenu ? (
-        <button onClick={onStart}
-          className="mt-8 rounded-full px-8 py-3 text-sm font-medium"
-          style={{ background: "var(--rest-primary)", color: "var(--rest-secondary)" }}>
-          View Menu →
-        </button>
-      ) : (
-        <p className="mt-8 text-sm text-white/60">Menu coming soon.</p>
-      )}
-    </div>
-  );
-}
-
-function CategoryPage({ category, items, index, total, r }: {
-  category: any; items: any[]; index: number; total: number; r: any;
+function CategoryPage({
+  category, items, part, totalParts, r,
+}: {
+  category: any; items: any[]; part: number; totalParts: number; r: any;
 }) {
   return (
-    <div>
-      <div className="mb-6 text-center">
-        <p className="text-[10px] uppercase tracking-[0.3em] text-white/50">Page {index} of {total}</p>
-        <h2 className="mt-2 font-display text-4xl" style={{ color: "var(--rest-primary)" }}>
-          {category.emoji ? `${category.emoji} ` : ""}{category.name}
+    <div className="flex h-full flex-col p-6 sm:p-8">
+      <header className="mb-5 text-center">
+        <p className="text-[10px] uppercase tracking-[0.35em] text-black/40">
+          {category.emoji ? `${category.emoji}  ` : ""}Category
+        </p>
+        <h2 className="mt-2 font-display text-3xl leading-tight sm:text-4xl" style={{ color: r.primary_color }}>
+          {category.name}
         </h2>
-      </div>
-      {items.length === 0 ? (
-        <p className="py-16 text-center text-sm text-white/60">No items in this category yet.</p>
-      ) : (
-        <ul className="space-y-4">
-          {items.map((i) => (
-            <li key={i.id} className="rounded-2xl border border-white/10 bg-black/30 p-4 backdrop-blur">
-              <div className="flex items-start gap-4">
-                {i.image_url && (
-                  <img src={i.image_url} alt="" className="h-20 w-20 shrink-0 rounded-xl object-cover" />
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="font-medium text-white">{i.name}</h3>
-                      {i.description && <p className="mt-0.5 text-sm text-white/60">{i.description}</p>}
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {i.is_special && <BadgeC label="Today's Special" color={r.primary_color} />}
-                        {i.is_bestseller && <BadgeC label="Best Seller" color={r.primary_color} />}
-                        {i.out_of_stock && <span className="rounded-full border border-white/20 px-2 py-0.5 text-[10px] uppercase tracking-wider text-white/60">Out of stock</span>}
-                      </div>
-                    </div>
-                    <div className="whitespace-nowrap font-display text-xl" style={{ color: "var(--rest-primary)" }}>
-                      {Number(i.price).toFixed(2)}
-                    </div>
-                  </div>
-                </div>
+        <div className="mx-auto mt-3 h-px w-12 bg-black/25" />
+        {totalParts > 1 && (
+          <p className="mt-2 text-[9px] uppercase tracking-[0.3em] text-black/35">
+            Part {part} of {totalParts}
+          </p>
+        )}
+      </header>
+
+      <ul className="flex-1 space-y-4 overflow-hidden">
+        {items.length === 0 ? (
+          <li className="pt-12 text-center text-xs text-black/40">No items yet.</li>
+        ) : items.map((i) => (
+          <li key={i.id} className="border-b border-dashed border-black/10 pb-3 last:border-0">
+            <div className="flex items-baseline gap-3">
+              <h3 className="font-display text-lg leading-tight text-black">
+                {i.name}
+              </h3>
+              <div className="flex-1 translate-y-[-4px] border-b border-dotted border-black/25" />
+              <div className="whitespace-nowrap font-display text-lg tabular-nums" style={{ color: r.primary_color }}>
+                {Number(i.price).toFixed(2)}
               </div>
-            </li>
-          ))}
-        </ul>
-      )}
+            </div>
+            {i.description && (
+              <p className="mt-1 text-xs leading-relaxed text-black/55">{i.description}</p>
+            )}
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {i.is_special && <MiniBadge label="Today's Special" />}
+              {i.is_bestseller && <MiniBadge label="Best Seller" />}
+              {i.out_of_stock && <MiniBadge label="Out of stock" muted />}
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
 
-function BadgeC({ label, color }: { label: string; color: string }) {
+function MiniBadge({ label, muted }: { label: string; muted?: boolean }) {
   return (
-    <span className="rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider"
-      style={{ background: `${color}22`, color, border: `1px solid ${color}55` }}>{label}</span>
+    <span
+      className={`rounded-full border px-2 py-0.5 text-[9px] font-medium uppercase tracking-wider ${
+        muted ? "border-black/15 text-black/40" : "border-black/25 text-black/70"
+      }`}
+    >
+      {label}
+    </span>
+  );
+}
+
+function BackPage({ r }: { r: any }) {
+  return (
+    <div className="flex h-full flex-col items-center justify-center p-10 text-center">
+      <BatLogo className="h-10 w-10 text-black/70" />
+      <p className="mt-6 font-display text-2xl" style={{ color: r.primary_color }}>Thank you</p>
+      <p className="mt-2 max-w-[24ch] text-sm text-black/50">
+        We hope you enjoyed browsing our menu.
+      </p>
+      <div className="mt-8 h-px w-16 bg-black/20" />
+      <p className="mt-3 text-[10px] uppercase tracking-[0.3em] text-black/40">Powered by BAT MENU</p>
+    </div>
   );
 }
