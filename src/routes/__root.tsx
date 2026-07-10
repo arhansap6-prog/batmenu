@@ -13,11 +13,9 @@ import { Toaster } from "sonner";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
+import { IntroGate } from "@/components/intro-gate";
 
-import "@fontsource/fraunces/400.css";
-import "@fontsource/fraunces/500.css";
-import "@fontsource/fraunces/600.css";
-import "@fontsource/fraunces/700.css";
+import "@fontsource/instrument-serif/400.css";
 import "@fontsource/inter/400.css";
 import "@fontsource/inter/500.css";
 import "@fontsource/inter/600.css";
@@ -67,7 +65,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { name: "theme-color", content: "#0B0B0F" },
+      { name: "theme-color", content: "#ffffff" },
       { title: "BAT MENU — Smart Digital Menus For Every Food Business" },
       { name: "description", content: "BAT MENU is a premium digital menu platform. Manage your restaurant menu with a permanent QR — no technical setup required." },
       { name: "author", content: "BAT MENU" },
@@ -89,7 +87,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <head><HeadContent /></head>
       <body>{children}<Scripts /></body>
     </html>
@@ -111,8 +109,10 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
-      <Toaster theme="dark" position="top-center" richColors closeButton />
+      <IntroGate>
+        <Outlet />
+      </IntroGate>
+      <Toaster theme="light" position="top-center" richColors closeButton />
     </QueryClientProvider>
   );
 }
