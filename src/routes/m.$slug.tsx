@@ -87,12 +87,15 @@ function PublicMenu() {
   function flipPrev() { bookRef.current?.pageFlip()?.flipPrev(); }
   function flipNext() { bookRef.current?.pageFlip()?.flipNext(); }
 
+  const accent = palette.accent ?? restaurant.primary_color;
+  const stageBg = palette.bg
+    ? `radial-gradient(120% 80% at 50% 0%, ${accent}22, ${palette.bg} 60%)`
+    : `radial-gradient(120% 80% at 50% 0%, ${restaurant.primary_color}12, oklch(0.965 0.003 260) 55%)`;
+
   return (
     <div
       className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-2 py-4 sm:px-6"
-      style={{
-        background: `radial-gradient(120% 80% at 50% 0%, ${restaurant.primary_color}12, oklch(0.965 0.003 260) 55%)`,
-      }}
+      style={{ background: stageBg }}
     >
       {/* Subtle stage */}
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_40%_at_50%_100%,rgba(0,0,0,0.08),transparent_70%)]" />
