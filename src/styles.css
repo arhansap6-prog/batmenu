@@ -1,0 +1,182 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * BAT MENU — Apple-style premium light aesthetic.
+ * Deep black on premium white with light gray surfaces and soft shadows.
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+
+  --font-display: "Instrument Serif", "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "Inter", "SF Pro Display", ui-sans-serif, system-ui, sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-ink: var(--ink);
+  --color-surface: var(--surface);
+  --color-elevated: var(--elevated);
+  --color-hairline: var(--hairline-color);
+}
+
+:root {
+  --radius: 0.875rem;
+
+  /* Premium light */
+  --background: oklch(0.99 0.002 90);
+  --foreground: oklch(0.14 0.005 260);
+  --ink: oklch(0.11 0.006 260);
+  --surface: oklch(0.985 0.002 90);
+  --elevated: oklch(1 0 0);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.14 0.005 260);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.14 0.005 260);
+
+  /* Deep ink as primary */
+  --primary: oklch(0.14 0.005 260);
+  --primary-foreground: oklch(0.99 0.002 90);
+
+  --secondary: oklch(0.96 0.003 260);
+  --secondary-foreground: oklch(0.14 0.005 260);
+  --muted: oklch(0.965 0.003 260);
+  --muted-foreground: oklch(0.45 0.008 260);
+  --accent: oklch(0.94 0.004 260);
+  --accent-foreground: oklch(0.14 0.005 260);
+
+  --destructive: oklch(0.58 0.22 27);
+  --destructive-foreground: oklch(0.99 0 0);
+
+  --hairline-color: oklch(0.14 0.005 260 / 8%);
+  --border: oklch(0.14 0.005 260 / 10%);
+  --input: oklch(0.14 0.005 260 / 12%);
+  --ring: oklch(0.14 0.005 260 / 25%);
+
+  --shadow-soft: 0 1px 2px oklch(0 0 0 / 0.04), 0 8px 24px -12px oklch(0 0 0 / 0.08);
+  --shadow-elevated: 0 4px 12px -4px oklch(0 0 0 / 0.06), 0 24px 60px -24px oklch(0 0 0 / 0.14);
+  --shadow-luxe: var(--shadow-elevated);
+  --shadow-glow: 0 0 0 1px oklch(0.14 0.005 260 / 0.06), 0 12px 40px -12px oklch(0 0 0 / 0.18);
+}
+
+/* Keep .dark tokens harmless — we run light only for this build. */
+.dark {
+  --background: oklch(0.99 0.002 90);
+  --foreground: oklch(0.14 0.005 260);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html, body, #root {
+    min-height: 100%;
+  }
+  body {
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    font-weight: 400;
+  }
+  ::selection {
+    background: oklch(0.14 0.005 260 / 0.14);
+    color: var(--color-foreground);
+  }
+}
+
+@utility glass {
+  background: color-mix(in oklab, white 82%, transparent);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid var(--hairline-color);
+  box-shadow: var(--shadow-elevated);
+}
+
+@utility gold-text {
+  color: var(--color-foreground);
+}
+
+@utility hairline {
+  border: 1px solid var(--hairline-color);
+}
+
+@utility btn-gold {
+  background: var(--color-foreground);
+  color: var(--color-background);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  box-shadow: var(--shadow-soft);
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-elevated);
+  }
+  &:active {
+    transform: translateY(0);
+    opacity: 0.92;
+  }
+}
+
+@utility card-luxe {
+  background: var(--color-card);
+  border: 1px solid var(--hairline-color);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-soft);
+}
+
+@utility ring-gold {
+  box-shadow: 0 0 0 1px oklch(0.14 0.005 260 / 0.15);
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@utility shimmer {
+  background: linear-gradient(90deg,
+    oklch(0.96 0.003 260) 0%,
+    oklch(0.99 0.002 90) 50%,
+    oklch(0.96 0.003 260) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+/* Realistic page-flip book styles */
+.book-shadow {
+  box-shadow:
+    0 30px 60px -20px oklch(0 0 0 / 0.35),
+    0 12px 24px -8px oklch(0 0 0 / 0.18);
+}

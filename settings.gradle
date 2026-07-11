@@ -1,0 +1,9 @@
+include ':app'
+
+// Capacitor
+def capacitorRoot = '../node_modules/@capacitor/android'
+include ':capacitor-android'
+project(':capacitor-android').projectDir = new File(capacitorRoot + '/capacitor')
+
+include ':capacitor-cordova-android-plugins'
+project(':capacitor-cordova-android-plugins').projectDir = new File('./capacitor-cordova-android-plugins')
