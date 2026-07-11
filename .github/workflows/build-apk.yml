@@ -6,7 +6,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
- 
 
     steps:
       - name: Checkout
@@ -17,11 +16,6 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-          - name: Setup Android SDK
-  uses: android-actions/setup-android@v3
-
-- name: Install Android SDK 35
-  run: sdkmanager "platforms;android-35"
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -34,10 +28,12 @@ jobs:
       - name: Build web
         run: npm run build
 
-      - name: Setup Android
+      - name: Install Capacitor
         run: |
-        npm install @capacitor/core @capacitor/cli @capacitor/android@6
-          npx cap sync android
+          npm install @capacitor/core @capacitor/cli @capacitor/android@6
+
+      - name: Sync Android
+        run: npx cap sync android
 
       - name: Build APK
         run: |
