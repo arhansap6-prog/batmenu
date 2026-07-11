@@ -16,8 +16,14 @@ export const Route = createFileRoute("/m/$slug")({
       supabase.from("categories").select("*").eq("restaurant_id", r.id).eq("hidden", false).order("sort_order"),
       supabase.from("menu_items").select("*").eq("restaurant_id", r.id).eq("available", true).order("sort_order"),
     ]);
+    let template: any = null;
+    if ((r as any).active_template_id) {
+      const { data: t } = await supabase.from("menu_templates").select("*")
+        .eq("id", (r as any).active_template_id).eq("is_active", true).maybeSingle();
+      template = t;
+    }
     supabase.from("qr_scans").insert({ restaurant_id: r.id }).then(() => {}, () => {});
-    return { restaurant: r, categories: cats.data ?? [], items: items.data ?? [] };
+    return { restaurant: r, categories: cats.data ?? [], items: items.data ?? [], template };
   },
   head: ({ loaderData }) => ({
     meta: loaderData ? [
