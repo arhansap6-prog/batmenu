@@ -12,7 +12,7 @@ jobs:
 
       - uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: temurin
 
       - uses: actions/setup-node@v4
@@ -20,12 +20,11 @@ jobs:
           node-version: 20
 
       - run: npm install
-      - run: npm run build
-
-      - name: Build APK
-        working-directory: android
-        run: ./gradlew assembleDebug
-
+      - run: npm run build       - name: Build APK
+  run: |
+    cd android
+    chmod +x gradlew
+    ./gradlew assembleDebug     
       - uses: actions/upload-artifact@v4
         with:
           name: APK
