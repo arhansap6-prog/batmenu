@@ -1,423 +1,727 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect, useMemo } from "react";
+import { createFileRoute } from "@tanstack/react-router";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  Plus, Copy, Trash2, Eye, Upload, ChevronDown,
+  Palette, Type, Layout, Star, Zap, Coffee, Pizza,
+  ShoppingBag, ChefHat, Utensils, Cake, Search, X,
+  Check, ArrowLeft, Pencil, GripVertical, ImagePlus,
+} from "lucide-react";
 import { toast } from "sonner";
-import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 
-export const Route = createFileRoute("/")({
-  component: LandingPage,
+export const Route = createFileRoute("/_authenticated/admin/templates")({
+  component: TemplateStudio,
 });
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
+// ─── Types ───────────────────────────────────────────────────────────────────
 
-export default function LandingPage() {
-  const [splash, setSplash] = useState(true);
-  const navigate = useNavigate();
+type Category =
+  | "restaurant" | "cafe" | "bakery" | "juice"
+  | "fastfood" | "cloud" | "finedining";
 
-  // Check if already logged in
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) navigate({ to: "/_authenticated/admin" });
+type Template = {
+  id: string;
+  name: string;
+  category: Category;
+  bg: string;
+  accent: string;
+  font: string;
+  assignedCount: number;
+  createdAt: string;
+  preview?: string;
+};
+
+type EditState = {
+  bg: string;
+  accent: string;
+  font: string;
+  name: string;
+  category: Category;
+  animations: boolean;
+  roundedCards: boolean;
+  darkMode: boolean;
+};
+
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const CATEGORIES: { id: Category; label: string; icon: React.ReactNode }[] = [
+  { id: "restaurant", label: "Restaurant", icon: <Utensils size={14} /> },
+  { id: "cafe", label: "Café", icon: <Coffee size={14} /> },
+  { id: "bakery", label: "Bakery", icon: <Cake size={14} /> },
+  { id: "juice", label: "Juice Shop", icon: <Zap size={14} /> },
+  { id: "fastfood", label: "Fast Food", icon: <Pizza size={14} /> },
+  { id: "cloud", label: "Cloud Kitchen", icon: <ShoppingBag size={14} /> },
+  { id: "finedining", label: "Fine Dining", icon: <ChefHat size={14} /> },
+];
+
+const FONTS = [
+  "Instrument Serif", "Inter", "Georgia",
+  "Playfair Display", "DM Sans", "Cormorant",
+];
+
+const ACCENT_PRESETS = [
+  "#FFD700", "#C0A882", "#E8C97A", "#9B8B6E",
+  "#D4AF37", "#B8860B", "#F5DEB3", "#DAA520",
+  "#fff", "#222", "#E63946", "#457B9D",
+];
+
+const INITIAL_TEMPLATES: Template[] = [
+  { id: "t1", name: "Noir Classic", category: "restaurant", bg: "#0a0a0a", accent: "#FFD700", font: "Instrument Serif", assignedCount: 3, createdAt: "2 days ago" },
+  { id: "t2", name: "Ivory Café", category: "cafe", bg: "#FAF7F0", accent: "#C0A882", font: "Georgia", assignedCount: 1, createdAt: "2 days ago" },
+  { id: "t3", name: "Baker's Gold", category: "bakery", bg: "#1C1410", accent: "#E8C97A", font: "Playfair Display", assignedCount: 0, createdAt: "2 days ago" },
+  { id: "t4", name: "Fresh Citrus", category: "juice", bg: "#F0FFF4", accent: "#38A169", font: "DM Sans", assignedCount: 2, createdAt: "2 days ago" },
+  { id: "t5", name: "Street Heat", category: "fastfood", bg: "#111", accent: "#E63946", font: "Inter", assignedCount: 0, createdAt: "2 days ago" },
+  { id: "t6", name: "Ghost Kitchen", category: "cloud", bg: "#0D0D0D", accent: "#9B8B6E", font: "Inter", assignedCount: 1, createdAt: "2 days ago" },
+  { id: "t7", name: "Prestige", category: "finedining", bg: "#080808", accent: "#D4AF37", font: "Cormorant", assignedCount: 4, createdAt: "2 days ago" },
+];
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+
+export default function TemplateStudio() {
+  const [templates, setTemplates] = useState<Template[]>(INITIAL_TEMPLATES);
+  const [activeCategory, setActiveCategory] = useState<Category | "all">("all");
+  const [search, setSearch] = useState("");
+  const [editing, setEditing] = useState<Template | null>(null);
+  const [previewing, setPreviewing] = useState<Template | null>(null);
+  const [editState, setEditState] = useState<EditState | null>(null);
+  const [tab, setTab] = useState<"style" | "layout" | "assign">("style");
+
+  const filtered = templates.filter((t) => {
+    const matchCat = activeCategory === "all" || t.category === activeCategory;
+    const matchSearch = t.name.toLowerCase().includes(search.toLowerCase());
+    return matchCat && matchSearch;
+  });
+
+  function startEdit(t: Template) {
+    setEditing(t);
+    setEditState({
+      bg: t.bg, accent: t.accent, font: t.font,
+      name: t.name, category: t.category,
+      animations: true, roundedCards: true, darkMode: t.bg.startsWith("#0") || t.bg.startsWith("#1"),
     });
-  }, [navigate]);
+    setTab("style");
+  }
 
-  // Splash timer — 3.5 seconds
-  useEffect(() => {
-    const t = setTimeout(() => setSplash(false), 3500);
-    return () => clearTimeout(t);
-  }, []);
+  function saveEdit() {
+    if (!editing || !editState) return;
+    setTemplates((prev) =>
+      prev.map((t) =>
+        t.id === editing.id
+          ? { ...t, ...editState }
+          : t
+      )
+    );
+    setEditing(null);
+    toast.success("Template saved");
+  }
 
+  function duplicateTemplate(t: Template) {
+    const copy: Template = {
+      ...t,
+      id: `t${Date.now()}`,
+      name: `${t.name} (Copy)`,
+      assignedCount: 0,
+      createdAt: "Just now",
+    };
+    setTemplates((prev) => [...prev, copy]);
+    toast.success("Template duplicated");
+  }
+
+  function deleteTemplate(id: string) {
+    setTemplates((prev) => prev.filter((t) => t.id !== id));
+    toast.success("Template deleted");
+  }
+
+  function addNew() {
+    const blank: Template = {
+      id: `t${Date.now()}`,
+      name: "New Template",
+      category: "restaurant",
+      bg: "#0a0a0a",
+      accent: "#FFD700",
+      font: "Inter",
+      assignedCount: 0,
+      createdAt: "Just now",
+    };
+    setTemplates((prev) => [blank, ...prev]);
+    startEdit(blank);
+  }
+
+  // ── Editor Panel ──────────────────────────────────────────────────────────
+  if (editing && editState) {
+    return (
+      <EditorPanel
+        template={editing}
+        state={editState}
+        setState={setEditState}
+        tab={tab}
+        setTab={setTab}
+        onSave={saveEdit}
+        onClose={() => setEditing(null)}
+      />
+    );
+  }
+
+  // ── Preview Modal ─────────────────────────────────────────────────────────
   return (
-    <div className="relative min-h-screen overflow-hidden bg-black">
-      <CinematicBackdrop />
-      <ArhxyWordmark />
-      <Particles />
+    <div className="min-h-screen bg-[#080808] text-white">
+      {/* Header */}
+      <div className="sticky top-0 z-30 border-b border-white/8 bg-[#080808]/95 backdrop-blur-xl">
+        <div className="mx-auto max-w-7xl px-6 py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h1 className="font-display text-xl tracking-tight">Design Studio</h1>
+              <p className="text-[11px] text-white/40 mt-0.5 tracking-widest uppercase">
+                {templates.length} templates
+              </p>
+            </div>
+            <button
+              onClick={addNew}
+              className="flex items-center gap-2 rounded-2xl bg-white px-5 py-2.5 text-[13px] font-medium text-black transition hover:bg-white/90 active:scale-95"
+            >
+              <Plus size={15} /> New Template
+            </button>
+          </div>
 
-      <AnimatePresence mode="wait">
-        {splash ? (
-          <SplashScreen key="splash" />
-        ) : (
-          <MainScreen key="main" />
+          {/* Filters */}
+          <div className="mt-4 flex items-center gap-3 overflow-x-auto pb-1 scrollbar-hide">
+            <div className="relative flex-shrink-0">
+              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search…"
+                className="w-36 rounded-xl border border-white/10 bg-white/5 py-2 pl-8 pr-3 text-[12px] outline-none placeholder:text-white/25 focus:border-white/25"
+              />
+            </div>
+
+            {/* Category pills */}
+            <button
+              onClick={() => setActiveCategory("all")}
+              className={`flex-shrink-0 rounded-full px-3.5 py-1.5 text-[11px] uppercase tracking-widest transition ${activeCategory === "all" ? "bg-white text-black" : "border border-white/12 text-white/50 hover:border-white/25"}`}
+            >
+              All
+            </button>
+            {CATEGORIES.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => setActiveCategory(c.id)}
+                className={`flex flex-shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11px] uppercase tracking-widest transition ${activeCategory === c.id ? "bg-white text-black" : "border border-white/12 text-white/50 hover:border-white/25"}`}
+              >
+                {c.icon} {c.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Grid */}
+      <div className="mx-auto max-w-7xl px-6 py-8">
+        <AnimatePresence mode="popLayout">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {filtered.map((t, i) => (
+              <motion.div
+                key={t.id}
+                layout
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ delay: i * 0.04 }}
+              >
+                <TemplateCard
+                  template={t}
+                  onEdit={() => startEdit(t)}
+                  onDuplicate={() => duplicateTemplate(t)}
+                  onDelete={() => deleteTemplate(t.id)}
+                  onPreview={() => setPreviewing(t)}
+                />
+              </motion.div>
+            ))}
+
+            {/* Add new card */}
+            <motion.button
+              layout
+              onClick={addNew}
+              className="flex min-h-[220px] flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-white/15 text-white/30 transition hover:border-white/30 hover:text-white/50"
+            >
+              <Plus size={28} />
+              <span className="text-[11px] uppercase tracking-widest">New Template</span>
+            </motion.button>
+          </div>
+        </AnimatePresence>
+
+        {filtered.length === 0 && (
+          <div className="py-24 text-center text-white/30">
+            <Layout size={32} className="mx-auto mb-3 opacity-40" />
+            <p className="text-sm">No templates found</p>
+          </div>
+        )}
+      </div>
+
+      {/* Preview Modal */}
+      <AnimatePresence>
+        {previewing && (
+          <PreviewModal template={previewing} onClose={() => setPreviewing(null)} />
         )}
       </AnimatePresence>
     </div>
   );
 }
 
-// ─── Splash Screen ────────────────────────────────────────────────────────────
+// ─── Template Card ────────────────────────────────────────────────────────────
 
-function SplashScreen() {
+function TemplateCard({
+  template: t,
+  onEdit, onDuplicate, onDelete, onPreview,
+}: {
+  template: Template;
+  onEdit: () => void; onDuplicate: () => void;
+  onDelete: () => void; onPreview: () => void;
+}) {
+  const cat = CATEGORIES.find((c) => c.id === t.category);
   return (
-    <motion.div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center"
-      exit={{ opacity: 0, scale: 1.04 }}
-      transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-    >
-      {/* Logo reveal */}
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className="text-center"
+    <div className="group relative flex flex-col overflow-hidden rounded-3xl border border-white/8 bg-white/[0.03] transition hover:border-white/16">
+      {/* Mini preview */}
+      <div
+        className="relative h-44 overflow-hidden"
+        style={{ background: t.bg }}
       >
-        {/* Icon */}
-        <motion.div
-          initial={{ scale: 0.7, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl border border-white/15 bg-white/8 backdrop-blur-xl"
-          style={{ boxShadow: "0 0 60px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.15)" }}
-        >
-          <span className="font-display text-3xl font-bold text-white">B</span>
-        </motion.div>
-
-        {/* Name */}
-        <motion.h1
-          initial={{ opacity: 0, letterSpacing: "0.5em" }}
-          animate={{ opacity: 1, letterSpacing: "0.25em" }}
-          transition={{ duration: 1.2, delay: 0.5 }}
-          className="text-2xl font-light uppercase text-white"
-          style={{ fontFamily: "Inter, sans-serif" }}
-        >
-          BAT MENU
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.4 }}
-          transition={{ duration: 1, delay: 1 }}
-          className="mt-2 text-[11px] uppercase tracking-[0.4em] text-white"
-        >
-          Smart Digital Menus
-        </motion.p>
-      </motion.div>
-
-      {/* Bottom loading line */}
-      <motion.div
-        className="absolute bottom-16 left-1/2 h-px w-24 -translate-x-1/2 overflow-hidden rounded-full bg-white/10"
-      >
-        <motion.div
-          className="h-full rounded-full bg-white"
-          initial={{ x: "-100%" }}
-          animate={{ x: "100%" }}
-          transition={{ duration: 2, delay: 0.8, ease: "easeInOut" }}
-        />
-      </motion.div>
-    </motion.div>
-  );
-}
-
-// ─── Main Screen (Landing + Login) ───────────────────────────────────────────
-
-function MainScreen() {
-  const [mode, setMode] = useState<"owner" | "admin">("owner");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPass, setShowPass] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-
-  async function handleLogin(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      toast.error(error.message);
-      setLoading(false);
-      return;
-    }
-    navigate({ to: "/_authenticated/admin" });
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.8 }}
-      className="relative z-10 flex min-h-screen flex-col items-center justify-center px-5 py-12"
-    >
-      {/* Top branding */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.1 }}
-        className="mb-10 text-center"
-      >
-        <div
-          className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/15 bg-white/8 backdrop-blur"
-          style={{ boxShadow: "0 0 40px rgba(255,255,255,0.06)" }}
-        >
-          <span className="font-display text-xl font-bold text-white">B</span>
+        {/* Fake menu preview */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4">
+          <div
+            className="h-1.5 w-20 rounded-full opacity-80"
+            style={{ background: t.accent }}
+          />
+          <div className="h-1 w-32 rounded-full bg-white/20" />
+          <div className="mt-3 flex gap-2">
+            {[1, 2, 3].map((n) => (
+              <div
+                key={n}
+                className="h-16 w-12 rounded-xl"
+                style={{ background: `${t.accent}18`, border: `1px solid ${t.accent}30` }}
+              />
+            ))}
+          </div>
+          <div className="mt-2 h-1 w-24 rounded-full bg-white/10" />
         </div>
-        <h1 className="text-[13px] uppercase tracking-[0.35em] text-white/60">BAT MENU</h1>
-      </motion.div>
 
-      {/* Glass login card */}
-      <motion.div
-        initial={{ opacity: 0, y: 32, scale: 0.97 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-sm overflow-hidden rounded-3xl border border-white/12 backdrop-blur-2xl"
-        style={{
-          background: "linear-gradient(135deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.04) 100%)",
-          boxShadow: "0 32px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.12)",
-        }}
-      >
-        {/* Mode tabs */}
-        <div className="flex border-b border-white/8">
+        {/* Hover actions */}
+        <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
           <button
-            onClick={() => setMode("owner")}
-            className={`flex-1 py-4 text-[11px] uppercase tracking-[0.25em] transition ${mode === "owner" ? "text-white border-b-2 border-white" : "text-white/35 hover:text-white/60"}`}
+            onClick={onPreview}
+            className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-2 text-[11px] text-white backdrop-blur transition hover:bg-white/20"
           >
-            Restaurant Login
+            <Eye size={12} /> Preview
           </button>
           <button
-            onClick={() => setMode("admin")}
-            className={`flex-1 py-4 text-[11px] uppercase tracking-[0.25em] transition ${mode === "admin" ? "text-white border-b-2 border-white" : "text-white/35 hover:text-white/60"}`}
+            onClick={onEdit}
+            className="flex items-center gap-1.5 rounded-full bg-white px-3 py-2 text-[11px] text-black transition hover:bg-white/90"
           >
-            Super Admin
+            <Pencil size={12} /> Edit
           </button>
         </div>
 
-        {/* Form */}
-        <div className="p-7">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={mode}
-              initial={{ opacity: 0, x: mode === "owner" ? -16 : 16 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: mode === "owner" ? 16 : -16 }}
-              transition={{ duration: 0.3 }}
-            >
-              <h2 className="mb-1 font-display text-xl text-white">
-                {mode === "owner" ? "Welcome back" : "Admin access"}
-              </h2>
-              <p className="mb-6 text-[12px] text-white/40">
-                {mode === "owner"
-                  ? "Sign in to manage your restaurant menu"
-                  : "Restricted to authorized personnel only"}
-              </p>
-
-              <form onSubmit={handleLogin} className="space-y-4">
-                {/* Email */}
-                <GlassField
-                  label="Email"
-                  type="email"
-                  value={email}
-                  onChange={setEmail}
-                  autoComplete="email"
-                  icon={<Mail size={11} />}
-                />
-
-                {/* Password */}
-                <div className="block">
-                  <span className="mb-1.5 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.28em] text-white/50">
-                    <Lock size={11} /> Password
-                  </span>
-                  <div className="relative">
-                    <input
-                      type={showPass ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      autoComplete="current-password"
-                      required
-                      className="w-full rounded-2xl border border-white/12 bg-black/30 px-4 py-3 pr-11 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-white/40 focus:ring-2 focus:ring-white/10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPass(!showPass)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60"
-                    >
-                      {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Submit */}
-                <motion.button
-                  type="submit"
-                  disabled={loading}
-                  whileTap={{ scale: 0.98 }}
-                  className="relative mt-2 w-full overflow-hidden rounded-2xl py-3.5 text-[13px] font-medium tracking-wide transition disabled:opacity-60"
-                  style={{
-                    background: mode === "admin"
-                      ? "linear-gradient(135deg, #1a1a1a, #333)"
-                      : "linear-gradient(135deg, #fff, #e8e8e8)",
-                    color: mode === "admin" ? "#fff" : "#000",
-                    boxShadow: mode === "admin"
-                      ? "0 8px 32px rgba(0,0,0,0.4)"
-                      : "0 8px 32px rgba(255,255,255,0.15)",
-                  }}
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <motion.span
-                        className="block h-4 w-4 rounded-full border-2 border-current border-t-transparent"
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
-                      />
-                      Signing in…
-                    </span>
-                  ) : (
-                    mode === "owner" ? "Sign In" : "Admin Sign In"
-                  )}
-                </motion.button>
-              </form>
-            </motion.div>
-          </AnimatePresence>
+        {/* Category badge */}
+        <div className="absolute left-3 top-3 flex items-center gap-1 rounded-full border border-white/15 bg-black/50 px-2.5 py-1 text-[10px] text-white/70 backdrop-blur">
+          {cat?.icon} {cat?.label}
         </div>
-
-        {/* Footer badges */}
-        <div className="flex items-center justify-center gap-3 border-t border-white/6 px-7 py-4">
-          <Badge>Secure</Badge>
-          <Badge>Encrypted</Badge>
-          <Badge>Premium</Badge>
-        </div>
-      </motion.div>
-
-      {/* Bottom copyright */}
-      <motion.footer
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-        className="mt-10 flex items-center justify-between w-full max-w-sm text-[10px] uppercase tracking-[0.3em] text-white/25"
-      >
-        <span>© {new Date().getFullYear()} ARHXY</span>
-        <span>Smart Digital Menus</span>
-      </motion.footer>
-    </motion.div>
-  );
-}
-
-// ─── Cinematic Backdrop ───────────────────────────────────────────────────────
-
-function CinematicBackdrop() {
-  return (
-    <>
-      <motion.div
-        className="pointer-events-none absolute inset-0 z-0"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1.5 }}
-        style={{
-          background:
-            "radial-gradient(60% 50% at 20% 20%, rgba(255,255,255,0.10), transparent 60%)," +
-            "radial-gradient(50% 50% at 85% 15%, rgba(255,255,255,0.06), transparent 60%)," +
-            "radial-gradient(70% 60% at 50% 100%, rgba(255,255,255,0.05), transparent 60%)," +
-            "linear-gradient(180deg, #050505 0%, #0a0a0a 60%, #000 100%)",
-        }}
-      />
-      {/* Grain */}
-      <div
-        className="pointer-events-none absolute inset-0 z-[1] opacity-[0.05] mix-blend-overlay"
-        style={{
-          backgroundImage: "radial-gradient(rgba(255,255,255,0.8) 1px, transparent 1px)",
-          backgroundSize: "3px 3px",
-        }}
-      />
-      {/* Drifting sheen */}
-      <motion.div
-        className="pointer-events-none absolute -inset-x-40 top-1/3 z-[1] h-[40vh] opacity-[0.06] blur-3xl"
-        style={{ background: "linear-gradient(90deg, transparent, #fff, transparent)" }}
-        animate={{ x: ["-10%", "10%", "-10%"] }}
-        transition={{ duration: 20, ease: "easeInOut", repeat: Infinity }}
-      />
-    </>
-  );
-}
-
-// ─── ARHXY Wordmark ───────────────────────────────────────────────────────────
-
-function ArhxyWordmark() {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 1.05 }}
-      animate={{ opacity: 0.055, scale: 1 }}
-      transition={{ duration: 2.5, ease: [0.22, 1, 0.36, 1] }}
-      className="pointer-events-none absolute inset-x-0 top-1/2 z-[1] -translate-y-1/2 select-none text-center"
-    >
-      <div
-        style={{
-          fontSize: "clamp(100px, 28vw, 480px)",
-          fontFamily: "Inter, sans-serif",
-          fontWeight: 700,
-          letterSpacing: "-0.02em",
-          lineHeight: 1,
-          background: "linear-gradient(180deg, #ffffff 0%, rgba(255,255,255,0.15) 100%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          filter: "blur(0.5px)",
-        }}
-      >
-        ARHXY
       </div>
-    </motion.div>
-  );
-}
 
-// ─── Particles ────────────────────────────────────────────────────────────────
+      {/* Info */}
+      <div className="flex flex-1 flex-col p-4">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <p className="text-[13px] font-medium leading-tight">{t.name}</p>
+            <p className="mt-0.5 text-[10px] text-white/35">{t.font} · {t.createdAt}</p>
+          </div>
+          <div className="flex items-center gap-1">
+            {/* Color dot */}
+            <span
+              className="block h-3 w-3 rounded-full ring-1 ring-white/20"
+              style={{ background: t.accent }}
+            />
+          </div>
+        </div>
 
-function Particles() {
-  const dots = useMemo(() =>
-    Array.from({ length: 28 }, (_, i) => ({
-      x: (i * 97 + 42) % 100,
-      y: (i * 53 + 17) % 100,
-      size: 1 + (i % 3),
-      dur: 10 + (i * 7) % 16,
-      delay: (i * 0.4) % 6,
-    })), []);
-
-  return (
-    <div className="pointer-events-none absolute inset-0 z-[2]">
-      {dots.map((d, i) => (
-        <motion.span
-          key={i}
-          className="absolute rounded-full bg-white"
-          style={{
-            left: `${d.x}%`,
-            top: `${d.y}%`,
-            width: d.size,
-            height: d.size,
-            opacity: 0.3,
-            boxShadow: "0 0 6px rgba(255,255,255,0.5)",
-          }}
-          animate={{ y: [0, -20, 0], opacity: [0.1, 0.5, 0.1] }}
-          transition={{ duration: d.dur, delay: d.delay, repeat: Infinity, ease: "easeInOut" }}
-        />
-      ))}
+        <div className="mt-3 flex items-center justify-between">
+          <span className="text-[10px] text-white/35">
+            {t.assignedCount > 0
+              ? `${t.assignedCount} restaurant${t.assignedCount > 1 ? "s" : ""}`
+              : "Unassigned"}
+          </span>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={onDuplicate}
+              className="rounded-lg p-1.5 text-white/30 transition hover:bg-white/8 hover:text-white/70"
+              title="Duplicate"
+            >
+              <Copy size={13} />
+            </button>
+            <button
+              onClick={onDelete}
+              className="rounded-lg p-1.5 text-white/30 transition hover:bg-red-500/15 hover:text-red-400"
+              title="Delete"
+            >
+              <Trash2 size={13} />
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ─── Editor Panel ─────────────────────────────────────────────────────────────
 
-function Badge({ children }: { children: React.ReactNode }) {
+function EditorPanel({
+  template, state, setState, tab, setTab, onSave, onClose,
+}: {
+  template: Template;
+  state: EditState;
+  setState: React.Dispatch<React.SetStateAction<EditState | null>>;
+  tab: "style" | "layout" | "assign";
+  setTab: (t: "style" | "layout" | "assign") => void;
+  onSave: () => void;
+  onClose: () => void;
+}) {
+  const set = (patch: Partial<EditState>) =>
+    setState((prev) => prev ? { ...prev, ...patch } : prev);
+
   return (
-    <span className="rounded-full border border-white/12 bg-white/5 px-3 py-1.5 text-[9px] uppercase tracking-[0.2em] text-white/35">
-      {children}
-    </span>
+    <div className="flex h-screen flex-col bg-[#080808] text-white lg:flex-row">
+      {/* Left: controls */}
+      <div className="flex w-full flex-col border-r border-white/8 lg:w-[360px] lg:flex-shrink-0">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-white/8 px-5 py-4">
+          <button onClick={onClose} className="flex items-center gap-1.5 text-[12px] text-white/40 hover:text-white/80">
+            <ArrowLeft size={14} /> Back
+          </button>
+          <button
+            onClick={onSave}
+            className="flex items-center gap-1.5 rounded-xl bg-white px-4 py-2 text-[12px] font-medium text-black transition hover:bg-white/90"
+          >
+            <Check size={13} /> Save
+          </button>
+        </div>
+
+        {/* Name */}
+        <div className="border-b border-white/8 px-5 py-4">
+          <label className="block text-[10px] uppercase tracking-widest text-white/40 mb-1.5">Template Name</label>
+          <input
+            value={state.name}
+            onChange={(e) => set({ name: e.target.value })}
+            className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-[13px] outline-none focus:border-white/25"
+          />
+        </div>
+
+        {/* Tabs */}
+        <div className="flex border-b border-white/8">
+          {(["style", "layout", "assign"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`flex-1 py-3 text-[11px] uppercase tracking-widest transition ${tab === t ? "border-b-2 border-white text-white" : "text-white/35 hover:text-white/60"}`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab content */}
+        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-6">
+          {tab === "style" && (
+            <>
+              {/* Category */}
+              <div>
+                <Label>Category</Label>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  {CATEGORIES.map((c) => (
+                    <button
+                      key={c.id}
+                      onClick={() => set({ category: c.id })}
+                      className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-[11px] transition ${state.category === c.id ? "border-white bg-white/10 text-white" : "border-white/10 text-white/40 hover:border-white/20"}`}
+                    >
+                      {c.icon} {c.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Background */}
+              <div>
+                <Label>Background Color</Label>
+                <div className="mt-2 flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={state.bg}
+                    onChange={(e) => set({ bg: e.target.value })}
+                    className="h-9 w-9 cursor-pointer rounded-lg border border-white/20 bg-transparent"
+                  />
+                  <input
+                    value={state.bg}
+                    onChange={(e) => set({ bg: e.target.value })}
+                    className="flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[12px] font-mono outline-none focus:border-white/25"
+                  />
+                </div>
+              </div>
+
+              {/* Accent */}
+              <div>
+                <Label>Accent Color</Label>
+                <div className="mt-2 grid grid-cols-6 gap-2">
+                  {ACCENT_PRESETS.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => set({ accent: c })}
+                      className={`h-8 w-full rounded-lg ring-offset-[#080808] transition ${state.accent === c ? "ring-2 ring-white ring-offset-2" : ""}`}
+                      style={{ background: c, border: c === "#fff" ? "1px solid rgba(255,255,255,0.2)" : undefined }}
+                    />
+                  ))}
+                </div>
+                <div className="mt-2 flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={state.accent}
+                    onChange={(e) => set({ accent: e.target.value })}
+                    className="h-9 w-9 cursor-pointer rounded-lg border border-white/20 bg-transparent"
+                  />
+                  <input
+                    value={state.accent}
+                    onChange={(e) => set({ accent: e.target.value })}
+                    className="flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[12px] font-mono outline-none focus:border-white/25"
+                  />
+                </div>
+              </div>
+
+              {/* Font */}
+              <div>
+                <Label>Font Family</Label>
+                <div className="mt-2 grid grid-cols-1 gap-2">
+                  {FONTS.map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => set({ font: f })}
+                      className={`rounded-xl border px-3 py-2.5 text-left text-[13px] transition ${state.font === f ? "border-white bg-white/10 text-white" : "border-white/10 text-white/50 hover:border-white/20"}`}
+                      style={{ fontFamily: f }}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {tab === "layout" && (
+            <>
+              <Toggle
+                label="Smooth Animations"
+                value={state.animations}
+                onChange={(v) => set({ animations: v })}
+              />
+              <Toggle
+                label="Rounded Food Cards"
+                value={state.roundedCards}
+                onChange={(v) => set({ roundedCards: v })}
+              />
+              <Toggle
+                label="Dark Mode"
+                value={state.darkMode}
+                onChange={(v) => set({ darkMode: v })}
+              />
+              <div className="rounded-2xl border border-white/8 bg-white/3 p-4 text-[12px] text-white/40">
+                More layout options (card style, grid columns, category display) coming soon.
+              </div>
+            </>
+          )}
+
+          {tab === "assign" && (
+            <div>
+              <Label>Assign to Restaurants</Label>
+              <p className="mt-1 text-[11px] text-white/35">
+                Restaurant owners receive up to 10 templates. Assign from the restaurant management page.
+              </p>
+              <div className="mt-4 rounded-2xl border border-white/8 bg-white/3 p-4 text-[12px] text-white/40">
+                Currently assigned to{" "}
+                <span className="text-white">{template.assignedCount}</span> restaurant
+                {template.assignedCount !== 1 ? "s" : ""}.
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Right: live preview */}
+      <div className="flex flex-1 flex-col">
+        <div className="flex items-center justify-between border-b border-white/8 px-5 py-3">
+          <span className="text-[10px] uppercase tracking-widest text-white/30">Live Preview</span>
+          <span className="text-[10px] text-white/25">{state.font}</span>
+        </div>
+        <div className="flex flex-1 items-center justify-center overflow-auto p-6">
+          <MenuPreview state={state} />
+        </div>
+      </div>
+    </div>
   );
 }
 
-function GlassField(props: {
-  label: string; type?: string; value: string;
-  onChange: (v: string) => void; autoComplete?: string;
-  icon?: React.ReactNode;
+// ─── Live Menu Preview ────────────────────────────────────────────────────────
+
+function MenuPreview({ state }: { state: EditState }) {
+  const items = [
+    { name: "Signature Dish", price: "₹380", tag: "Best Seller" },
+    { name: "Chef's Special", price: "₹520" },
+    { name: "Classic Favourite", price: "₹290" },
+  ];
+  const isDark = state.darkMode || state.bg.startsWith("#0") || state.bg.startsWith("#1");
+  const textColor = isDark ? "#fff" : "#111";
+  const subText = isDark ? "rgba(255,255,255,0.45)" : "rgba(0,0,0,0.4)";
+
+  return (
+    <div
+      className="w-full max-w-sm overflow-hidden shadow-2xl"
+      style={{
+        background: state.bg,
+        borderRadius: state.roundedCards ? 24 : 8,
+        fontFamily: state.font,
+        color: textColor,
+        minHeight: 520,
+      }}
+    >
+      {/* Header */}
+      <div className="px-6 pt-8 pb-4 text-center">
+        <div
+          className="mx-auto mb-2 h-1 w-12 rounded-full"
+          style={{ background: state.accent }}
+        />
+        <h2 className="text-2xl font-semibold tracking-tight">BAT MENU</h2>
+        <p className="mt-1 text-[11px] uppercase tracking-[0.3em]" style={{ color: subText }}>
+          Digital Menu
+        </p>
+      </div>
+
+      {/* Categories */}
+      <div className="flex gap-2 overflow-x-auto px-6 pb-4 scrollbar-hide">
+        {["All", "Starters", "Mains", "Desserts"].map((cat, i) => (
+          <span
+            key={cat}
+            className="flex-shrink-0 rounded-full px-3 py-1.5 text-[11px] uppercase tracking-wider"
+            style={
+              i === 0
+                ? { background: state.accent, color: isDark ? "#000" : "#fff" }
+                : { border: `1px solid ${state.accent}40`, color: subText }
+            }
+          >
+            {cat}
+          </span>
+        ))}
+      </div>
+
+      {/* Items */}
+      <div className="space-y-3 px-4 pb-8">
+        {items.map((item) => (
+          <div
+            key={item.name}
+            className="flex items-center justify-between gap-3 p-3"
+            style={{
+              background: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
+              borderRadius: state.roundedCards ? 16 : 6,
+              border: `1px solid ${state.accent}18`,
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className="h-12 w-12 flex-shrink-0"
+                style={{
+                  background: `${state.accent}22`,
+                  borderRadius: state.roundedCards ? 12 : 4,
+                }}
+              />
+              <div>
+                <p className="text-[13px] font-medium">{item.name}</p>
+                {item.tag && (
+                  <span
+                    className="text-[9px] uppercase tracking-widest"
+                    style={{ color: state.accent }}
+                  >
+                    {item.tag}
+                  </span>
+                )}
+              </div>
+            </div>
+            <span
+              className="text-[13px] font-semibold"
+              style={{ color: state.accent }}
+            >
+              {item.price}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Preview Modal ────────────────────────────────────────────────────────────
+
+function PreviewModal({ template: t, onClose }: { template: Template; onClose: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-6"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.92, y: 16 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.92, y: 16 }}
+        onClick={(e) => e.stopPropagation()}
+        className="relative"
+      >
+        <button
+          onClick={onClose}
+          className="absolute -right-3 -top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur transition hover:bg-white/20"
+        >
+          <X size={14} />
+        </button>
+        <MenuPreview
+          state={{
+            bg: t.bg, accent: t.accent, font: t.font, name: t.name,
+            category: t.category, animations: true, roundedCards: true,
+            darkMode: t.bg.startsWith("#0") || t.bg.startsWith("#1"),
+          }}
+        />
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ─── Small helpers ────────────────────────────────────────────────────────────
+
+function Label({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[10px] uppercase tracking-widest text-white/40">{children}</p>
+  );
+}
+
+function Toggle({
+  label, value, onChange,
+}: {
+  label: string; value: boolean; onChange: (v: boolean) => void;
 }) {
   return (
-    <label className="block">
-      <span className="mb-1.5 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.28em] text-white/50">
-        {props.icon}{props.label}
-      </span>
-      <input
-        type={props.type ?? "text"}
-        value={props.value}
-        onChange={(e) => props.onChange(e.target.value)}
-        autoComplete={props.autoComplete}
-        required
-        className="w-full rounded-2xl border border-white/12 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-white/40 focus:ring-2 focus:ring-white/10"
-      />
-    </label>
+    <div className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/3 px-4 py-3">
+      <span className="text-[13px] text-white/70">{label}</span>
+      <button
+        onClick={() => onChange(!value)}
+        className={`relative h-6 w-11 rounded-full transition-colors ${value ? "bg-white" : "bg-white/15"}`}
+      >
+        <span
+          className={`absolute top-0.5 h-5 w-5 rounded-full bg-black transition-transform ${value ? "translate-x-5" : "translate-x-0.5"}`}
+        />
+      </button>
+    </div>
   );
 }
