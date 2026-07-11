@@ -16,8 +16,14 @@ export const Route = createFileRoute("/m/$slug")({
       supabase.from("categories").select("*").eq("restaurant_id", r.id).eq("hidden", false).order("sort_order"),
       supabase.from("menu_items").select("*").eq("restaurant_id", r.id).eq("available", true).order("sort_order"),
     ]);
+    let template: any = null;
+    if ((r as any).active_template_id) {
+      const { data: t } = await supabase.from("menu_templates").select("*")
+        .eq("id", (r as any).active_template_id).eq("is_active", true).maybeSingle();
+      template = t;
+    }
     supabase.from("qr_scans").insert({ restaurant_id: r.id }).then(() => {}, () => {});
-    return { restaurant: r, categories: cats.data ?? [], items: items.data ?? [] };
+    return { restaurant: r, categories: cats.data ?? [], items: items.data ?? [], template };
   },
   head: ({ loaderData }) => ({
     meta: loaderData ? [
@@ -44,7 +50,8 @@ type PageKind =
   | { kind: "back"; r: any };
 
 function PublicMenu() {
-  const { restaurant, categories, items } = Route.useLoaderData();
+  const { restaurant, categories, items, template } = Route.useLoaderData();
+  const palette = (template?.config?.palette ?? {}) as { bg?: string; accent?: string };
   const bookRef = useRef<any>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
@@ -80,12 +87,15 @@ function PublicMenu() {
   function flipPrev() { bookRef.current?.pageFlip()?.flipPrev(); }
   function flipNext() { bookRef.current?.pageFlip()?.flipNext(); }
 
+  const accent = palette.accent ?? restaurant.primary_color;
+  const stageBg = palette.bg
+    ? `radial-gradient(120% 80% at 50% 0%, ${accent}22, ${palette.bg} 60%)`
+    : `radial-gradient(120% 80% at 50% 0%, ${restaurant.primary_color}12, oklch(0.965 0.003 260) 55%)`;
+
   return (
     <div
       className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden px-2 py-4 sm:px-6"
-      style={{
-        background: `radial-gradient(120% 80% at 50% 0%, ${restaurant.primary_color}12, oklch(0.965 0.003 260) 55%)`,
-      }}
+      style={{ background: stageBg }}
     >
       {/* Subtle stage */}
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_40%_at_50%_100%,rgba(0,0,0,0.08),transparent_70%)]" />

@@ -121,6 +121,48 @@ export type Database = {
           },
         ]
       }
+      menu_templates: {
+        Row: {
+          category: string
+          config: Json
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          is_premium: boolean
+          name: string
+          preview_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_premium?: boolean
+          name: string
+          preview_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_premium?: boolean
+          name?: string
+          preview_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       qr_scans: {
         Row: {
           id: string
@@ -149,7 +191,9 @@ export type Database = {
       }
       restaurants: {
         Row: {
+          active_template_id: string | null
           address: string | null
+          assigned_template_ids: string[]
           banner_url: string | null
           business_type: string | null
           created_at: string
@@ -171,7 +215,9 @@ export type Database = {
           welcome_message: string | null
         }
         Insert: {
+          active_template_id?: string | null
           address?: string | null
+          assigned_template_ids?: string[]
           banner_url?: string | null
           business_type?: string | null
           created_at?: string
@@ -193,7 +239,9 @@ export type Database = {
           welcome_message?: string | null
         }
         Update: {
+          active_template_id?: string | null
           address?: string | null
+          assigned_template_ids?: string[]
           banner_url?: string | null
           business_type?: string | null
           created_at?: string
@@ -214,7 +262,15 @@ export type Database = {
           updated_at?: string
           welcome_message?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "restaurants_active_template_id_fkey"
+            columns: ["active_template_id"]
+            isOneToOne: false
+            referencedRelation: "menu_templates"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

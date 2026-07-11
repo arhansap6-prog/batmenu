@@ -10,6 +10,7 @@ import {
   deleteRestaurant, setRestaurantStatus, resetOwnerPassword, updateRestaurantMeta,
 } from "@/lib/admin.functions";
 import { ExternalLink, Trash2, PauseCircle, PlayCircle, KeyRound, Save, Plus, Edit3, X } from "lucide-react";
+import { TemplateAssignmentPanel } from "@/components/template-assignment";
 
 export const Route = createFileRoute("/_authenticated/admin/restaurants/$id")({
   component: RestaurantDetail,
@@ -42,7 +43,7 @@ function RestaurantDetail() {
   const resetPw = useServerFn(resetOwnerPassword);
   const updateMeta = useServerFn(updateRestaurantMeta);
 
-  const [tab, setTab] = useState<"menu" | "branding" | "settings" | "qr">("menu");
+  const [tab, setTab] = useState<"menu" | "design" | "branding" | "settings" | "qr">("menu");
   const [newPw, setNewPw] = useState("");
 
   if (isLoading) return <div className="p-10 text-center text-sm text-muted-foreground">Loading…</div>;
@@ -82,7 +83,7 @@ function RestaurantDetail() {
       </header>
 
       <nav className="flex gap-1 overflow-x-auto rounded-full border border-border p-1">
-        {(["menu", "branding", "qr", "settings"] as const).map((t) => (
+        {(["menu", "design", "branding", "qr", "settings"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)}
             className={`whitespace-nowrap rounded-full px-4 py-1.5 text-xs uppercase tracking-wider transition ${
               tab === t ? "bg-[oklch(0.82_0.13_88_/_0.15)] text-foreground ring-gold" : "text-muted-foreground hover:text-foreground"
@@ -91,6 +92,7 @@ function RestaurantDetail() {
       </nav>
 
       {tab === "menu" && <MenuManager restaurantId={id} categories={data.categories} items={data.items} canEditCategories />}
+      {tab === "design" && <TemplateAssignmentPanel restaurantId={id} />}
       {tab === "branding" && <BrandingEditor r={r} onSaved={() => qc.invalidateQueries({ queryKey: ["restaurant", id] })} update={updateMeta} />}
       {tab === "qr" && (
         <div className="grid gap-6 lg:grid-cols-[auto_1fr]">
