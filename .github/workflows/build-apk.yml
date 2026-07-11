@@ -9,14 +9,10 @@ jobs:
 
     steps:
       - name: Checkout
-with:with:
-  node-version: 22with:
-  node-version: 22
-  node-version: 22        uses: actions/checkout@v4
+        uses: actions/checkout@v4
 
       - name: Setup Java
-        uses: actions/setup-java@v4  with:
-    node-version: 22
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
@@ -24,20 +20,16 @@ with:with:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          non:   with:
-    node-version: 22
+          node-version: 22
+
       - name: Install dependencies
-with:
-  node-version: 22
         run: npm install
 
       - name: Build web
-        run: npm run  with:
-    node-version: 22 build
+        run: npm run build
 
       - name: Setup Android
-        run: |  with:
-    node-version: 22
+        run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
           npx cap sync android
 
@@ -51,5 +43,4 @@ with:
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
-
+          path: android/app/build/outputs/apk/debug/*.apk
