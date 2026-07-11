@@ -16,6 +16,7 @@ import { Route as MSlugRouteImport } from './routes/m.$slug'
 import { Route as AuthenticatedMyMenuRouteImport } from './routes/_authenticated/my-menu'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminTemplatesRouteImport } from './routes/_authenticated/admin.templates'
 import { Route as AuthenticatedAdminQrRouteImport } from './routes/_authenticated/admin.qr'
 import { Route as AuthenticatedAdminRestaurantsIndexRouteImport } from './routes/_authenticated/admin.restaurants.index'
 import { Route as AuthenticatedAdminRestaurantsNewRouteImport } from './routes/_authenticated/admin.restaurants.new'
@@ -55,6 +56,12 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminTemplatesRoute =
+  AuthenticatedAdminTemplatesRouteImport.update({
+    id: '/templates',
+    path: '/templates',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminQrRoute = AuthenticatedAdminQrRouteImport.update({
   id: '/qr',
   path: '/qr',
@@ -86,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/my-menu': typeof AuthenticatedMyMenuRoute
   '/m/$slug': typeof MSlugRoute
   '/admin/qr': typeof AuthenticatedAdminQrRoute
+  '/admin/templates': typeof AuthenticatedAdminTemplatesRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/restaurants/$id': typeof AuthenticatedAdminRestaurantsIdRoute
   '/admin/restaurants/new': typeof AuthenticatedAdminRestaurantsNewRoute
@@ -97,6 +105,7 @@ export interface FileRoutesByTo {
   '/my-menu': typeof AuthenticatedMyMenuRoute
   '/m/$slug': typeof MSlugRoute
   '/admin/qr': typeof AuthenticatedAdminQrRoute
+  '/admin/templates': typeof AuthenticatedAdminTemplatesRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/restaurants/$id': typeof AuthenticatedAdminRestaurantsIdRoute
   '/admin/restaurants/new': typeof AuthenticatedAdminRestaurantsNewRoute
@@ -111,6 +120,7 @@ export interface FileRoutesById {
   '/_authenticated/my-menu': typeof AuthenticatedMyMenuRoute
   '/m/$slug': typeof MSlugRoute
   '/_authenticated/admin/qr': typeof AuthenticatedAdminQrRoute
+  '/_authenticated/admin/templates': typeof AuthenticatedAdminTemplatesRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/restaurants/$id': typeof AuthenticatedAdminRestaurantsIdRoute
   '/_authenticated/admin/restaurants/new': typeof AuthenticatedAdminRestaurantsNewRoute
@@ -125,6 +135,7 @@ export interface FileRouteTypes {
     | '/my-menu'
     | '/m/$slug'
     | '/admin/qr'
+    | '/admin/templates'
     | '/admin/'
     | '/admin/restaurants/$id'
     | '/admin/restaurants/new'
@@ -136,6 +147,7 @@ export interface FileRouteTypes {
     | '/my-menu'
     | '/m/$slug'
     | '/admin/qr'
+    | '/admin/templates'
     | '/admin'
     | '/admin/restaurants/$id'
     | '/admin/restaurants/new'
@@ -149,6 +161,7 @@ export interface FileRouteTypes {
     | '/_authenticated/my-menu'
     | '/m/$slug'
     | '/_authenticated/admin/qr'
+    | '/_authenticated/admin/templates'
     | '/_authenticated/admin/'
     | '/_authenticated/admin/restaurants/$id'
     | '/_authenticated/admin/restaurants/new'
@@ -213,6 +226,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/templates': {
+      id: '/_authenticated/admin/templates'
+      path: '/templates'
+      fullPath: '/admin/templates'
+      preLoaderRoute: typeof AuthenticatedAdminTemplatesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/qr': {
       id: '/_authenticated/admin/qr'
       path: '/qr'
@@ -246,6 +266,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminQrRoute: typeof AuthenticatedAdminQrRoute
+  AuthenticatedAdminTemplatesRoute: typeof AuthenticatedAdminTemplatesRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminRestaurantsIdRoute: typeof AuthenticatedAdminRestaurantsIdRoute
   AuthenticatedAdminRestaurantsNewRoute: typeof AuthenticatedAdminRestaurantsNewRoute
@@ -254,6 +275,7 @@ interface AuthenticatedAdminRouteChildren {
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminQrRoute: AuthenticatedAdminQrRoute,
+  AuthenticatedAdminTemplatesRoute: AuthenticatedAdminTemplatesRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminRestaurantsIdRoute: AuthenticatedAdminRestaurantsIdRoute,
   AuthenticatedAdminRestaurantsNewRoute: AuthenticatedAdminRestaurantsNewRoute,
