@@ -50,7 +50,8 @@ type PageKind =
   | { kind: "back"; r: any };
 
 function PublicMenu() {
-  const { restaurant, categories, items } = Route.useLoaderData();
+  const { restaurant, categories, items, template } = Route.useLoaderData();
+  const palette = (template?.config?.palette ?? {}) as { bg?: string; accent?: string };
   const bookRef = useRef<any>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
