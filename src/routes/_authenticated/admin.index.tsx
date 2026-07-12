@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/clire, UtensilsCrossed, ScanLine, Activity, Sparkles, ArrowUpRight } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Store, UtensilsCrossed, ScanLine, Activity, Sparkles, ArrowUpRight } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   component: DashboardHome,

@@ -18,7 +18,7 @@ export default function LandingPage() {
   // Check if already logged in
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) navigate({ to: "/_authenticated/admin" });
+      if (session) navigate({ to: "/admin" });
     });
   }, [navigate]);
 
@@ -127,7 +127,7 @@ function MainScreen() {
       setLoading(false);
       return;
     }
-    navigate({ to: "/_authenticated/admin" });
+    navigate({ to: "/admin" });
   }
 
   return (
