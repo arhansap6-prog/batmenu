@@ -1,0 +1,1 @@
+CREATE POLICY "Owner manages own categories" ON public.categories FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM public.restaurants r WHERE r.id = categories.restaurant_id AND r.owner_id = auth.uid())) WITH CHECK (EXISTS (SELECT 1 FROM public.restaurants r WHERE r.id = categories.restaurant_id AND r.owner_id = auth.uid()));
