@@ -75,9 +75,10 @@ function MyMenu() {
   }), [items, search, activeCat]);
 
   async function toggleFlag(item: Item, flag: "out_of_stock" | "is_special" | "is_bestseller") {
-    const next = { ...item, [flag]: !item[flag] };
+    const next: Item = { ...item, [flag]: !item[flag] };
     setItems((prev) => prev.map((x) => (x.id === item.id ? next : x)));
-    const { error } = await supabase.from("menu_items").update({ [flag]: next[flag] }).eq("id", item.id);
+    const patch: Partial<Pick<Item, "out_of_stock" | "is_special" | "is_bestseller">> = { [flag]: next[flag] };
+    const { error } = await supabase.from("menu_items").update(patch).eq("id", item.id);
     if (error) { toast.error(error.message); setItems((prev) => prev.map((x) => (x.id === item.id ? item : x))); }
   }
 
