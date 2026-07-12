@@ -58,13 +58,13 @@ function MyMenu() {
   async function loadCats(rid: string) {
     const { data, error } = await supabase.from("categories")
       .select("id,name,sort_order").eq("restaurant_id", rid).order("sort_order");
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setCats(data ?? []);
   }
   async function loadItems(rid: string) {
     const { data, error } = await supabase.from("menu_items")
       .select("*").eq("restaurant_id", rid).order("sort_order");
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setItems((data ?? []) as Item[]);
   }
 
@@ -104,7 +104,7 @@ function MyMenu() {
           category_id: payload.category_id, image_url: payload.image_url,
           out_of_stock: payload.out_of_stock, is_special: payload.is_special, is_bestseller: payload.is_bestseller,
         }).eq("id", payload.id).select().single();
-      if (error) return toast.error(error.message);
+      if (error) { toast.error(error.message); return; }
       setItems((prev) => prev.map((x) => (x.id === data.id ? (data as Item) : x)));
       toast.success("Item updated");
     } else {
@@ -117,7 +117,7 @@ function MyMenu() {
         out_of_stock: payload.out_of_stock, is_special: payload.is_special, is_bestseller: payload.is_bestseller,
         available: true, sort_order: nextSort,
       }).select().single();
-      if (error) return toast.error(error.message);
+      if (error) { toast.error(error.message); return; }
       setItems((prev) => [...prev, data as Item]);
       toast.success("Item added");
     }
@@ -130,7 +130,7 @@ function MyMenu() {
     const { data, error } = await supabase.from("categories")
       .insert({ restaurant_id: restaurantId, name: name.trim(), sort_order: nextSort })
       .select("id,name,sort_order").single();
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setCats((p) => [...p, data as Category]);
     toast.success("Category added");
   }
