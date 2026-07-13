@@ -138,7 +138,10 @@ function PublicMenu() {
         >
           {pages.map((p, idx) => (
             <Page key={idx} number={idx + 1} total={pages.length}>
-              {renderPage(p)}
+              {renderPage(p, (it) => setOpenItem({
+                ...it,
+                category_name: it.category_id ? catNameById.get(it.category_id) ?? null : null,
+              }))}
             </Page>
           ))}
         </HTMLFlipBook>
@@ -168,8 +171,27 @@ function PublicMenu() {
       </div>
 
       <p className="mt-3 text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70">
-        Tap the page edge or swipe to turn
+        Tap an item to view details, or swipe to turn the page
       </p>
+
+      {/* Search overlay */}
+      <MenuSearch
+        items={items as any}
+        categories={categories as any}
+        accent={accent}
+        onOpenItem={(it) => setOpenItem({
+          ...it,
+          category_name: it.category_id ? catNameById.get(it.category_id) ?? null : null,
+        })}
+      />
+
+      {/* Detail modal */}
+      <FoodDetailModal
+        item={openItem}
+        restaurantName={restaurant.name}
+        accent={accent}
+        onClose={() => setOpenItem(null)}
+      />
     </div>
   );
 }
