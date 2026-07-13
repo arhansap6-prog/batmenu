@@ -163,6 +163,63 @@ export type Database = {
         }
         Relationships: []
       }
+      promotional_videos: {
+        Row: {
+          allow_mute: boolean
+          created_at: string
+          duration_seconds: number | null
+          enabled: boolean
+          file_size_bytes: number | null
+          format: string | null
+          id: string
+          loop_video: boolean
+          poster_url: string | null
+          scheduled_end: string | null
+          scheduled_start: string | null
+          show_skip_button: boolean
+          show_watermark: boolean
+          updated_at: string
+          uploaded_by: string | null
+          video_url: string
+        }
+        Insert: {
+          allow_mute?: boolean
+          created_at?: string
+          duration_seconds?: number | null
+          enabled?: boolean
+          file_size_bytes?: number | null
+          format?: string | null
+          id?: string
+          loop_video?: boolean
+          poster_url?: string | null
+          scheduled_end?: string | null
+          scheduled_start?: string | null
+          show_skip_button?: boolean
+          show_watermark?: boolean
+          updated_at?: string
+          uploaded_by?: string | null
+          video_url: string
+        }
+        Update: {
+          allow_mute?: boolean
+          created_at?: string
+          duration_seconds?: number | null
+          enabled?: boolean
+          file_size_bytes?: number | null
+          format?: string | null
+          id?: string
+          loop_video?: boolean
+          poster_url?: string | null
+          scheduled_end?: string | null
+          scheduled_start?: string | null
+          show_skip_button?: boolean
+          show_watermark?: boolean
+          updated_at?: string
+          uploaded_by?: string | null
+          video_url?: string
+        }
+        Relationships: []
+      }
       qr_scans: {
         Row: {
           id: string

@@ -4,6 +4,8 @@ import HTMLFlipBook from "react-pageflip";
 import { supabase } from "@/integrations/supabase/client";
 import { BatLogo } from "@/lib/brand";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { FoodDetailModal, type MenuItemDetail } from "@/components/food-detail-modal";
+import { MenuSearch } from "@/components/menu-search";
 
 export const Route = createFileRoute("/m/$slug")({
   ssr: false,
@@ -55,6 +57,12 @@ function PublicMenu() {
   const bookRef = useRef<any>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
+  const [openItem, setOpenItem] = useState<MenuItemDetail | null>(null);
+  const catNameById = useMemo(() => {
+    const m = new Map<string, string>();
+    (categories ?? []).forEach((c: any) => m.set(c.id, c.name));
+    return m;
+  }, [categories]);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 768px)");
@@ -130,7 +138,10 @@ function PublicMenu() {
         >
           {pages.map((p, idx) => (
             <Page key={idx} number={idx + 1} total={pages.length}>
-              {renderPage(p)}
+              {renderPage(p, (it) => setOpenItem({
+                ...it,
+                category_name: it.category_id ? catNameById.get(it.category_id) ?? null : null,
+              }))}
             </Page>
           ))}
         </HTMLFlipBook>
@@ -160,8 +171,27 @@ function PublicMenu() {
       </div>
 
       <p className="mt-3 text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70">
-        Tap the page edge or swipe to turn
+        Tap an item to view details, or swipe to turn the page
       </p>
+
+      {/* Search overlay */}
+      <MenuSearch
+        items={items as any}
+        categories={categories as any}
+        accent={accent}
+        onOpenItem={(it) => setOpenItem({
+          ...it,
+          category_name: it.category_id ? catNameById.get(it.category_id) ?? null : null,
+        })}
+      />
+
+      {/* Detail modal */}
+      <FoodDetailModal
+        item={openItem}
+        restaurantName={restaurant.name}
+        accent={accent}
+        onClose={() => setOpenItem(null)}
+      />
     </div>
   );
 }
@@ -197,10 +227,10 @@ const Page = forwardRef<HTMLDivElement, { number: number; total: number; childre
   }
 );
 
-function renderPage(p: PageKind) {
+function renderPage(p: PageKind, onOpenItem: (i: any) => void) {
   if (p.kind === "cover") return <CoverPage r={p.r} />;
   if (p.kind === "back") return <BackPage r={p.r} />;
-  return <CategoryPage {...p} />;
+  return <CategoryPage {...p} onOpenItem={onOpenItem} />;
 }
 
 function CoverPage({ r }: { r: any }) {
@@ -239,9 +269,10 @@ function CoverPage({ r }: { r: any }) {
 }
 
 function CategoryPage({
-  category, items, part, totalParts, r,
+  category, items, part, totalParts, r, onOpenItem,
 }: {
   category: any; items: any[]; part: number; totalParts: number; r: any;
+  onOpenItem: (i: any) => void;
 }) {
   return (
     <div className="flex h-full flex-col p-6 sm:p-8">
@@ -265,23 +296,29 @@ function CategoryPage({
           <li className="pt-12 text-center text-xs text-black/40">No items yet.</li>
         ) : items.map((i) => (
           <li key={i.id} className="border-b border-dashed border-black/10 pb-3 last:border-0">
-            <div className="flex items-baseline gap-3">
-              <h3 className="font-display text-lg leading-tight text-black">
-                {i.name}
-              </h3>
-              <div className="flex-1 translate-y-[-4px] border-b border-dotted border-black/25" />
-              <div className="whitespace-nowrap font-display text-lg tabular-nums" style={{ color: r.primary_color }}>
-                {Number(i.price).toFixed(2)}
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onOpenItem(i); }}
+              className="group w-full text-left transition active:scale-[0.99]"
+            >
+              <div className="flex items-baseline gap-3">
+                <h3 className="font-display text-lg leading-tight text-black transition group-hover:opacity-70">
+                  {i.name}
+                </h3>
+                <div className="flex-1 translate-y-[-4px] border-b border-dotted border-black/25" />
+                <div className="whitespace-nowrap font-display text-lg tabular-nums" style={{ color: r.primary_color }}>
+                  {Number(i.price).toFixed(2)}
+                </div>
               </div>
-            </div>
-            {i.description && (
-              <p className="mt-1 text-xs leading-relaxed text-black/55">{i.description}</p>
-            )}
-            <div className="mt-1.5 flex flex-wrap gap-1.5">
-              {i.is_special && <MiniBadge label="Today's Special" />}
-              {i.is_bestseller && <MiniBadge label="Best Seller" />}
-              {i.out_of_stock && <MiniBadge label="Out of stock" muted />}
-            </div>
+              {i.description && (
+                <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-black/55">{i.description}</p>
+              )}
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {i.is_special && <MiniBadge label="Today's Special" />}
+                {i.is_bestseller && <MiniBadge label="Best Seller" />}
+                {i.out_of_stock && <MiniBadge label="Out of stock" muted />}
+              </div>
+            </button>
           </li>
         ))}
       </ul>
