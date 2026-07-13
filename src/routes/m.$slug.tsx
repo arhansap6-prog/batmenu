@@ -57,6 +57,12 @@ function PublicMenu() {
   const bookRef = useRef<any>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
+  const [openItem, setOpenItem] = useState<MenuItemDetail | null>(null);
+  const catNameById = useMemo(() => {
+    const m = new Map<string, string>();
+    (categories ?? []).forEach((c: any) => m.set(c.id, c.name));
+    return m;
+  }, [categories]);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 768px)");
