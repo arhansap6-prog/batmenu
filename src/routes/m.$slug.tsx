@@ -4,6 +4,8 @@ import HTMLFlipBook from "react-pageflip";
 import { supabase } from "@/integrations/supabase/client";
 import { BatLogo } from "@/lib/brand";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { FoodDetailModal, type MenuItemDetail } from "@/components/food-detail-modal";
+import { MenuSearch } from "@/components/menu-search";
 
 export const Route = createFileRoute("/m/$slug")({
   ssr: false,
