@@ -1,9 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Eye, EyeOff, Mail, Lock, ChevronDown } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
