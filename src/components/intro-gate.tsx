@@ -15,7 +15,7 @@ export function IntroGate({ children }: { children: React.ReactNode }) {
     const t = setTimeout(() => {
       try { sessionStorage.setItem(KEY, "1"); } catch { /* ignore */ }
       setPhase("done");
-    }, 2000);
+    }, 3800);
     return () => clearTimeout(t);
   }, []);
 
