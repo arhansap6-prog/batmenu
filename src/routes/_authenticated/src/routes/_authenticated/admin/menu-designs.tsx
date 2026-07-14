@@ -295,7 +295,7 @@ export default function MenuDesignSystem() {
                     />
                   </div>
                   <p className="text-gray-600">Font: {preset.text.font}</p>
-                  <p className="text-gray-600">Animation: {preset.animations.transitionSpeed}</p>
+                  <p className="text-gray-600">Category: {preset.category}</p>
                 </div>
               </motion.div>
             ))}
