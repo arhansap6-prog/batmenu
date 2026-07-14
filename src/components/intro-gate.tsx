@@ -49,11 +49,22 @@ export function IntroGate({ children }: { children: React.ReactNode }) {
                 className="relative"
               >
                 <div className="absolute inset-0 -z-10 rounded-full bg-white/10 blur-3xl" />
-                <img
-                  src="/batman-logo.png?v=1"
-                  className="h-24 w-24 sm:h-28 sm:w-28"
-                  alt="Logo"
-                />
+                {logoFailed ? (
+                  <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-yellow-400 text-5xl font-black sm:h-28 sm:w-28">
+                    B
+                  </div>
+                ) : (
+                  <img
+                    src={logoSrc}
+                    className="h-24 w-24 sm:h-28 sm:w-28 object-contain"
+                    alt="BAT MENU"
+                    onError={() => {
+                      if (logoSrc !== LOGO_FALLBACK) setLogoSrc(LOGO_FALLBACK);
+                      else setLogoFailed(true);
+                    }}
+                  />
+                )}
+
               </motion.div>
 
               <motion.h1
