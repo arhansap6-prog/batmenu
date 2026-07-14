@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { BrandWordmark } from "@/lib/brand";
 import { toast } from "sonner";
 import {
-  LayoutDashboard, Store, PlusCircle, QrCode, LogOut, Menu as MenuIcon, X, Palette,
+  LayoutDashboard, Store, PlusCircle, QrCode, LogOut, Menu as MenuIcon, X, Palette, Film,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -26,6 +26,7 @@ const NAV: NavItem[] = [
   { to: "/admin/restaurants/new", label: "Create Restaurant", icon: PlusCircle },
   { to: "/admin/templates", label: "Templates", icon: Palette },
   { to: "/admin/qr", label: "QR Manager", icon: QrCode },
+  { to: "/admin/videos", label: "Promo Video", icon: Film },
 ];
 
 function AdminShell() {

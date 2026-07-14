@@ -55,6 +55,7 @@ function QrManager() {
               <p className="text-muted-foreground">Menu URL</p>
               <p className="font-mono text-xs break-all">{menuUrl(sel.slug)}</p>
             </div>
+            <ScanStats restaurantId={sel.id} />
           </div>
         ) : (
           <div className="card-luxe p-10 text-center text-sm text-muted-foreground">Select a restaurant.</div>
