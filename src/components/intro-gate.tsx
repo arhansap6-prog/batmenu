@@ -46,7 +46,8 @@ export function IntroGate({ children }: { children: React.ReactNode }) {
               >
                 <div className="absolute inset-0 -z-10 rounded-full bg-white/10 blur-3xl" />
                 <img
-  src="/batman-logo.png"
+                  <img
+  src="/batman-logo.png?v=1"
   className="h-24 w-24 sm:h-28 sm:w-28"
   alt="Logo"
 />
