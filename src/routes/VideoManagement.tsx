@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { motion } from 'motion/react';
-import { Upload, Trash2, Eye, Toggle2, Play } from 'lucide-react';
+import { Upload, Trash2, Eye, ToggleLeft, Play } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface VideoData {
@@ -124,7 +124,7 @@ export default function VideoManagement() {
                 className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-white/8 border border-white/15 hover:bg-white/12 transition"
               >
                 <span className="text-white text-sm">{video.enabled ? 'Disable' : 'Enable'} Video</span>
-                <Toggle2 size={18} className="text-white/50" />
+                <ToggleLeft size={18} className="text-white/50" />
               </button>
 
               <button

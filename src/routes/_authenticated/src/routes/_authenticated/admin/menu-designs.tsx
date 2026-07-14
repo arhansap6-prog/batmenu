@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Plus, Edit2, Trash2, Eye, Copy, Download, Settings, Grid3x3, Layers } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/admin/menu-designs")({
+export const Route = createFileRoute("/_authenticated/src/routes/_authenticated/admin/menu-designs")({
   component: MenuDesignSystem,
 });
 
@@ -295,7 +295,7 @@ export default function MenuDesignSystem() {
                     />
                   </div>
                   <p className="text-gray-600">Font: {preset.text.font}</p>
-                  <p className="text-gray-600">Animation: {preset.animations.transitionSpeed}</p>
+                  <p className="text-gray-600">Category: {preset.category}</p>
                 </div>
               </motion.div>
             ))}
