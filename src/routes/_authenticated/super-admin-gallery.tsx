@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import { Upload, Play, Trash2, Eye, Download, Settings, FileVideo, Image } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/admin/gallery")({
+export const Route = createFileRoute("/_authenticated/super-admin-gallery")({
   component: SuperAdminGallery,
 });
 

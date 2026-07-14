@@ -13,15 +13,19 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MSlugRouteImport } from './routes/m.$slug'
+import { Route as AuthenticatedSuperAdminGalleryRouteImport } from './routes/_authenticated/super-admin-gallery'
 import { Route as AuthenticatedMyMenuRouteImport } from './routes/_authenticated/my-menu'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as SrcRoutesAppIntroRouteImport } from './routes/src/routes/app-intro'
 import { Route as AuthenticatedAdminTemplatesRouteImport } from './routes/_authenticated/admin.templates'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as AuthenticatedAdminQrRouteImport } from './routes/_authenticated/admin.qr'
 import { Route as AuthenticatedAdminRestaurantsIndexRouteImport } from './routes/_authenticated/admin.restaurants.index'
 import { Route as AuthenticatedAdminRestaurantsNewRouteImport } from './routes/_authenticated/admin.restaurants.new'
 import { Route as AuthenticatedAdminRestaurantsIdRouteImport } from './routes/_authenticated/admin.restaurants.$id'
+import { Route as AuthenticatedSrcRoutesAuthenticatedAdminMenuDesignsRouteImport } from './routes/_authenticated/src/routes/_authenticated/admin/menu-designs'
+import { Route as AuthenticatedSrcRoutesAuthenticatedAdminDesignStudioRouteImport } from './routes/_authenticated/src/routes/_authenticated/admin/design-studio'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -42,6 +46,12 @@ const MSlugRoute = MSlugRouteImport.update({
   path: '/m/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedSuperAdminGalleryRoute =
+  AuthenticatedSuperAdminGalleryRouteImport.update({
+    id: '/super-admin-gallery',
+    path: '/super-admin-gallery',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedMyMenuRoute = AuthenticatedMyMenuRouteImport.update({
   id: '/my-menu',
   path: '/my-menu',
@@ -56,6 +66,11 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const SrcRoutesAppIntroRoute = SrcRoutesAppIntroRouteImport.update({
+  id: '/src/routes/app-intro',
+  path: '/src/routes/app-intro',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminTemplatesRoute =
   AuthenticatedAdminTemplatesRouteImport.update({
@@ -92,33 +107,53 @@ const AuthenticatedAdminRestaurantsIdRoute =
     path: '/restaurants/$id',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedSrcRoutesAuthenticatedAdminMenuDesignsRoute =
+  AuthenticatedSrcRoutesAuthenticatedAdminMenuDesignsRouteImport.update({
+    id: '/src/routes/_authenticated/admin/menu-designs',
+    path: '/src/routes/admin/menu-designs',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSrcRoutesAuthenticatedAdminDesignStudioRoute =
+  AuthenticatedSrcRoutesAuthenticatedAdminDesignStudioRouteImport.update({
+    id: '/src/routes/_authenticated/admin/design-studio',
+    path: '/src/routes/admin/design-studio',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/my-menu': typeof AuthenticatedMyMenuRoute
+  '/super-admin-gallery': typeof AuthenticatedSuperAdminGalleryRoute
   '/m/$slug': typeof MSlugRoute
   '/admin/qr': typeof AuthenticatedAdminQrRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/templates': typeof AuthenticatedAdminTemplatesRoute
+  '/src/routes/app-intro': typeof SrcRoutesAppIntroRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/restaurants/$id': typeof AuthenticatedAdminRestaurantsIdRoute
   '/admin/restaurants/new': typeof AuthenticatedAdminRestaurantsNewRoute
   '/admin/restaurants/': typeof AuthenticatedAdminRestaurantsIndexRoute
+  '/src/routes/admin/design-studio': typeof AuthenticatedSrcRoutesAuthenticatedAdminDesignStudioRoute
+  '/src/routes/admin/menu-designs': typeof AuthenticatedSrcRoutesAuthenticatedAdminMenuDesignsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/my-menu': typeof AuthenticatedMyMenuRoute
+  '/super-admin-gallery': typeof AuthenticatedSuperAdminGalleryRoute
   '/m/$slug': typeof MSlugRoute
   '/admin/qr': typeof AuthenticatedAdminQrRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/templates': typeof AuthenticatedAdminTemplatesRoute
+  '/src/routes/app-intro': typeof SrcRoutesAppIntroRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/restaurants/$id': typeof AuthenticatedAdminRestaurantsIdRoute
   '/admin/restaurants/new': typeof AuthenticatedAdminRestaurantsNewRoute
   '/admin/restaurants': typeof AuthenticatedAdminRestaurantsIndexRoute
+  '/src/routes/admin/design-studio': typeof AuthenticatedSrcRoutesAuthenticatedAdminDesignStudioRoute
+  '/src/routes/admin/menu-designs': typeof AuthenticatedSrcRoutesAuthenticatedAdminMenuDesignsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -127,14 +162,18 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/my-menu': typeof AuthenticatedMyMenuRoute
+  '/_authenticated/super-admin-gallery': typeof AuthenticatedSuperAdminGalleryRoute
   '/m/$slug': typeof MSlugRoute
   '/_authenticated/admin/qr': typeof AuthenticatedAdminQrRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/templates': typeof AuthenticatedAdminTemplatesRoute
+  '/src/routes/app-intro': typeof SrcRoutesAppIntroRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/restaurants/$id': typeof AuthenticatedAdminRestaurantsIdRoute
   '/_authenticated/admin/restaurants/new': typeof AuthenticatedAdminRestaurantsNewRoute
   '/_authenticated/admin/restaurants/': typeof AuthenticatedAdminRestaurantsIndexRoute
+  '/_authenticated/src/routes/_authenticated/admin/design-studio': typeof AuthenticatedSrcRoutesAuthenticatedAdminDesignStudioRoute
+  '/_authenticated/src/routes/_authenticated/admin/menu-designs': typeof AuthenticatedSrcRoutesAuthenticatedAdminMenuDesignsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -143,27 +182,35 @@ export interface FileRouteTypes {
     | '/auth'
     | '/admin'
     | '/my-menu'
+    | '/super-admin-gallery'
     | '/m/$slug'
     | '/admin/qr'
     | '/admin/settings'
     | '/admin/templates'
+    | '/src/routes/app-intro'
     | '/admin/'
     | '/admin/restaurants/$id'
     | '/admin/restaurants/new'
     | '/admin/restaurants/'
+    | '/src/routes/admin/design-studio'
+    | '/src/routes/admin/menu-designs'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/my-menu'
+    | '/super-admin-gallery'
     | '/m/$slug'
     | '/admin/qr'
     | '/admin/settings'
     | '/admin/templates'
+    | '/src/routes/app-intro'
     | '/admin'
     | '/admin/restaurants/$id'
     | '/admin/restaurants/new'
     | '/admin/restaurants'
+    | '/src/routes/admin/design-studio'
+    | '/src/routes/admin/menu-designs'
   id:
     | '__root__'
     | '/'
@@ -171,14 +218,18 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/admin'
     | '/_authenticated/my-menu'
+    | '/_authenticated/super-admin-gallery'
     | '/m/$slug'
     | '/_authenticated/admin/qr'
     | '/_authenticated/admin/settings'
     | '/_authenticated/admin/templates'
+    | '/src/routes/app-intro'
     | '/_authenticated/admin/'
     | '/_authenticated/admin/restaurants/$id'
     | '/_authenticated/admin/restaurants/new'
     | '/_authenticated/admin/restaurants/'
+    | '/_authenticated/src/routes/_authenticated/admin/design-studio'
+    | '/_authenticated/src/routes/_authenticated/admin/menu-designs'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -186,6 +237,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   MSlugRoute: typeof MSlugRoute
+  SrcRoutesAppIntroRoute: typeof SrcRoutesAppIntroRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -218,6 +270,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/super-admin-gallery': {
+      id: '/_authenticated/super-admin-gallery'
+      path: '/super-admin-gallery'
+      fullPath: '/super-admin-gallery'
+      preLoaderRoute: typeof AuthenticatedSuperAdminGalleryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/my-menu': {
       id: '/_authenticated/my-menu'
       path: '/my-menu'
@@ -238,6 +297,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/src/routes/app-intro': {
+      id: '/src/routes/app-intro'
+      path: '/src/routes/app-intro'
+      fullPath: '/src/routes/app-intro'
+      preLoaderRoute: typeof SrcRoutesAppIntroRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/templates': {
       id: '/_authenticated/admin/templates'
@@ -281,6 +347,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRestaurantsIdRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/src/routes/_authenticated/admin/menu-designs': {
+      id: '/_authenticated/src/routes/_authenticated/admin/menu-designs'
+      path: '/src/routes/admin/menu-designs'
+      fullPath: '/src/routes/admin/menu-designs'
+      preLoaderRoute: typeof AuthenticatedSrcRoutesAuthenticatedAdminMenuDesignsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/src/routes/_authenticated/admin/design-studio': {
+      id: '/_authenticated/src/routes/_authenticated/admin/design-studio'
+      path: '/src/routes/admin/design-studio'
+      fullPath: '/src/routes/admin/design-studio'
+      preLoaderRoute: typeof AuthenticatedSrcRoutesAuthenticatedAdminDesignStudioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -311,11 +391,19 @@ const AuthenticatedAdminRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedMyMenuRoute: typeof AuthenticatedMyMenuRoute
+  AuthenticatedSuperAdminGalleryRoute: typeof AuthenticatedSuperAdminGalleryRoute
+  AuthenticatedSrcRoutesAuthenticatedAdminDesignStudioRoute: typeof AuthenticatedSrcRoutesAuthenticatedAdminDesignStudioRoute
+  AuthenticatedSrcRoutesAuthenticatedAdminMenuDesignsRoute: typeof AuthenticatedSrcRoutesAuthenticatedAdminMenuDesignsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedMyMenuRoute: AuthenticatedMyMenuRoute,
+  AuthenticatedSuperAdminGalleryRoute: AuthenticatedSuperAdminGalleryRoute,
+  AuthenticatedSrcRoutesAuthenticatedAdminDesignStudioRoute:
+    AuthenticatedSrcRoutesAuthenticatedAdminDesignStudioRoute,
+  AuthenticatedSrcRoutesAuthenticatedAdminMenuDesignsRoute:
+    AuthenticatedSrcRoutesAuthenticatedAdminMenuDesignsRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -326,7 +414,18 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   MSlugRoute: MSlugRoute,
+  SrcRoutesAppIntroRoute: SrcRoutesAppIntroRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

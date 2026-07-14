@@ -5,7 +5,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Volume2, VolumeX, X, SkipForward } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/app-intro")({
+export const Route = createFileRoute("/src/routes/app-intro")({
   component: AppIntroVideo,
 });
 

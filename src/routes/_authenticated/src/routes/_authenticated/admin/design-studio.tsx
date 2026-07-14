@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import { Plus, Edit2, Trash2, Eye, Copy, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/admin/design-studio")({
+export const Route = createFileRoute("/_authenticated/src/routes/_authenticated/admin/design-studio")({
   component: DesignStudio,
 });
 
