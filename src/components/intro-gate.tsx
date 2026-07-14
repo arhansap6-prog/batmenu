@@ -15,7 +15,7 @@ export function IntroGate({ children }: { children: React.ReactNode }) {
     const t = setTimeout(() => {
       try { sessionStorage.setItem(KEY, "1"); } catch { /* ignore */ }
       setPhase("done");
-    }, 3600);
+    }, 2000);
     return () => clearTimeout(t);
   }, []);
 
@@ -45,7 +45,11 @@ export function IntroGate({ children }: { children: React.ReactNode }) {
                 className="relative"
               >
                 <div className="absolute inset-0 -z-10 rounded-full bg-white/10 blur-3xl" />
-                <BatLogo className="h-24 w-24 sm:h-28 sm:w-28" />
+                <img
+  src="/batman-logo.png"
+  className="h-24 w-24 sm:h-28 sm:w-28"
+  alt="Logo"
+/>
               </motion.div>
 
               <motion.h1
@@ -55,7 +59,7 @@ export function IntroGate({ children }: { children: React.ReactNode }) {
                 className="mt-10 font-display text-5xl sm:text-6xl"
                 style={{ fontFamily: 'var(--font-display)' }}
               >
-                BAT BIZ
+                BAT MENU
               </motion.h1>
 
               <motion.p
@@ -64,7 +68,7 @@ export function IntroGate({ children }: { children: React.ReactNode }) {
                 transition={{ delay: 1.6, duration: 0.9 }}
                 className="mt-4 text-[11px] uppercase tracking-[0.32em] text-white/70"
               >
-                Smart Digital Menus For Every Food Business
+                Premium Digital Menus For Restaurants
               </motion.p>
 
               <motion.div
