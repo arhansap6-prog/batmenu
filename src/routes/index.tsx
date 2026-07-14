@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 
-export const Route = createFileRoute("/splash")({
+export const Route = createFileRoute("/")({
   component: SplashScreen,
 });
 
