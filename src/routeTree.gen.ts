@@ -18,6 +18,7 @@ import { Route as AuthenticatedMyMenuRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as SrcRoutesAppIntroRouteImport } from './routes/src/routes/app-intro'
+import { Route as AuthenticatedAdminVideosRouteImport } from './routes/_authenticated/admin.videos'
 import { Route as AuthenticatedAdminTemplatesRouteImport } from './routes/_authenticated/admin.templates'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as AuthenticatedAdminQrRouteImport } from './routes/_authenticated/admin.qr'
@@ -72,6 +73,12 @@ const SrcRoutesAppIntroRoute = SrcRoutesAppIntroRouteImport.update({
   path: '/src/routes/app-intro',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminVideosRoute =
+  AuthenticatedAdminVideosRouteImport.update({
+    id: '/videos',
+    path: '/videos',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminTemplatesRoute =
   AuthenticatedAdminTemplatesRouteImport.update({
     id: '/templates',
@@ -130,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/admin/qr': typeof AuthenticatedAdminQrRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/templates': typeof AuthenticatedAdminTemplatesRoute
+  '/admin/videos': typeof AuthenticatedAdminVideosRoute
   '/src/routes/app-intro': typeof SrcRoutesAppIntroRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/restaurants/$id': typeof AuthenticatedAdminRestaurantsIdRoute
@@ -147,6 +155,7 @@ export interface FileRoutesByTo {
   '/admin/qr': typeof AuthenticatedAdminQrRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/templates': typeof AuthenticatedAdminTemplatesRoute
+  '/admin/videos': typeof AuthenticatedAdminVideosRoute
   '/src/routes/app-intro': typeof SrcRoutesAppIntroRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/restaurants/$id': typeof AuthenticatedAdminRestaurantsIdRoute
@@ -167,6 +176,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/qr': typeof AuthenticatedAdminQrRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/templates': typeof AuthenticatedAdminTemplatesRoute
+  '/_authenticated/admin/videos': typeof AuthenticatedAdminVideosRoute
   '/src/routes/app-intro': typeof SrcRoutesAppIntroRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/restaurants/$id': typeof AuthenticatedAdminRestaurantsIdRoute
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/admin/qr'
     | '/admin/settings'
     | '/admin/templates'
+    | '/admin/videos'
     | '/src/routes/app-intro'
     | '/admin/'
     | '/admin/restaurants/$id'
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/admin/qr'
     | '/admin/settings'
     | '/admin/templates'
+    | '/admin/videos'
     | '/src/routes/app-intro'
     | '/admin'
     | '/admin/restaurants/$id'
@@ -223,6 +235,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/qr'
     | '/_authenticated/admin/settings'
     | '/_authenticated/admin/templates'
+    | '/_authenticated/admin/videos'
     | '/src/routes/app-intro'
     | '/_authenticated/admin/'
     | '/_authenticated/admin/restaurants/$id'
@@ -305,6 +318,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SrcRoutesAppIntroRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/videos': {
+      id: '/_authenticated/admin/videos'
+      path: '/videos'
+      fullPath: '/admin/videos'
+      preLoaderRoute: typeof AuthenticatedAdminVideosRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/templates': {
       id: '/_authenticated/admin/templates'
       path: '/templates'
@@ -368,6 +388,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminQrRoute: typeof AuthenticatedAdminQrRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminTemplatesRoute: typeof AuthenticatedAdminTemplatesRoute
+  AuthenticatedAdminVideosRoute: typeof AuthenticatedAdminVideosRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminRestaurantsIdRoute: typeof AuthenticatedAdminRestaurantsIdRoute
   AuthenticatedAdminRestaurantsNewRoute: typeof AuthenticatedAdminRestaurantsNewRoute
@@ -378,6 +399,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminQrRoute: AuthenticatedAdminQrRoute,
   AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
   AuthenticatedAdminTemplatesRoute: AuthenticatedAdminTemplatesRoute,
+  AuthenticatedAdminVideosRoute: AuthenticatedAdminVideosRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminRestaurantsIdRoute: AuthenticatedAdminRestaurantsIdRoute,
   AuthenticatedAdminRestaurantsNewRoute: AuthenticatedAdminRestaurantsNewRoute,
