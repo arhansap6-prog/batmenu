@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { BatLogo } from "@/lib/brand";
 
 const KEY = "batmenu.intro.shown";
+const LOGO_SRC = "/batman-logo.png";
+const LOGO_FALLBACK = "/72722-removebg-preview.png";
 
 export function IntroGate({ children }: { children: React.ReactNode }) {
   const [phase, setPhase] = useState<"pending" | "playing" | "done">("pending");
+  const [logoSrc, setLogoSrc] = useState(LOGO_SRC);
+  const [logoFailed, setLogoFailed] = useState(false);
 
   useEffect(() => {
     try {
@@ -15,9 +18,10 @@ export function IntroGate({ children }: { children: React.ReactNode }) {
     const t = setTimeout(() => {
       try { sessionStorage.setItem(KEY, "1"); } catch { /* ignore */ }
       setPhase("done");
-    }, 3800);
+    }, 2200);
     return () => clearTimeout(t);
   }, []);
+
 
   return (
     <>
