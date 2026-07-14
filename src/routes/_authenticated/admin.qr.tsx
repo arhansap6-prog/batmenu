@@ -64,3 +64,67 @@ function QrManager() {
     </div>
   );
 }
+
+function ScanStats({ restaurantId }: { restaurantId: string }) {
+  const { data } = useQuery({
+    queryKey: ["qr-scans", restaurantId],
+    queryFn: async () => {
+      const since = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
+      const [total, recent] = await Promise.all([
+        supabase.from("qr_scans").select("id", { count: "exact", head: true }).eq("restaurant_id", restaurantId),
+        supabase.from("qr_scans").select("scanned_at").eq("restaurant_id", restaurantId).gte("scanned_at", since),
+      ]);
+      const days: Record<string, number> = {};
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(Date.now() - i * 86400_000).toISOString().slice(0, 10);
+        days[d] = 0;
+      }
+      (recent.data ?? []).forEach((r: any) => {
+        const d = new Date(r.scanned_at).toISOString().slice(0, 10);
+        if (d in days) days[d]++;
+      });
+      const today = new Date().toISOString().slice(0, 10);
+      return {
+        total: total.count ?? 0,
+        week: (recent.data ?? []).length,
+        today: days[today] ?? 0,
+        series: Object.entries(days),
+      };
+    },
+  });
+  const max = Math.max(1, ...(data?.series.map(([, v]) => v as number) ?? [1]));
+  return (
+    <div className="card-luxe p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <h3 className="text-sm font-semibold">Scan Analytics</h3>
+        <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Last 7 days</span>
+      </div>
+      <div className="grid grid-cols-3 gap-3 text-center">
+        <Stat label="Total" value={data?.total ?? 0} />
+        <Stat label="This week" value={data?.week ?? 0} />
+        <Stat label="Today" value={data?.today ?? 0} />
+      </div>
+      <div className="mt-4 flex h-20 items-end gap-1.5">
+        {(data?.series ?? []).map(([d, v]) => (
+          <div key={d} className="flex flex-1 flex-col items-center gap-1">
+            <div
+              className="w-full rounded-t bg-[oklch(0.82_0.13_88)]/70 transition-all"
+              style={{ height: `${((v as number) / max) * 100}%`, minHeight: 2 }}
+            />
+            <span className="text-[9px] text-muted-foreground">{d.slice(5)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-xl bg-white/5 p-3">
+      <div className="font-display text-2xl tabular-nums">{value}</div>
+      <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{label}</div>
+    </div>
+  );
+}
+
