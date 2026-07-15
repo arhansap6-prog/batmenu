@@ -1,118 +1,213 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
-  Outlet,
-  Link,
-  createRootRouteWithContext,
-  useRouter,
-  HeadContent,
-  Scripts,
-} from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
-import { Toaster } from "sonner";
+// src/middleware/roleMiddleware.ts
+import { redirect } from "@tanstack/react-router";
 
-import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
-import { supabase } from "@/integrations/supabase/client";
-import { IntroGate } from "@/components/intro-gate";
+export interface AuthContext {
+  user: {
+    id: string;
+    email: string;
+    role: "super_admin" | "restaurant_admin" | "customer";
+  } | null;
+}
 
-import "@fontsource/instrument-serif/400.css";
-import "@fontsource/inter/400.css";
-import "@fontsource/inter/500.css";
-import "@fontsource/inter/600.css";
-import "@fontsource/inter/700.css";
+export const requireSuperAdmin = (context: AuthContext) => {
+  if (!context.user || context.user.role !== "super_admin") {
+    throw redirect({ to: "/unauthorized" });
+  }
+};
 
-function NotFoundComponent() {
+export const requireRestaurantAdmin = (context: AuthContext) => {
+  if (!context.user || !["restaurant_admin", "super_admin"].includes(context.user.role)) {
+    throw redirect({ to: "/unauthorized" });
+  }
+};
+
+export const requireAuth = (context: AuthContext) => {
+  if (!context.user) {
+    throw redirect({ to: "/" });
+  }
+};
+
+// src/routes/__root.tsx
+import { createRootRoute, Outlet, useSearch } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { AuthContext } from "@/middleware/roleMiddleware";
+
+declare global {
+  interface LayoutGenerics {
+    context: AuthContext;
+  }
+}
+
+export const Route = createRootRoute({
+  component: RootLayout,
+  beforeLoad: async ({ context }) => {
+    // Verify role on every route change
+    if (context.user && !["super_admin", "restaurant_admin", "customer"].includes(context.user.role)) {
+      throw new Error("Invalid role");
+    }
+    return context;
+  },
+});
+
+export function RootLayout() {
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
-      <div className="glass max-w-md rounded-3xl p-10 text-center">
-        <p className="gold-text font-display text-7xl">404</p>
-        <h2 className="mt-4 font-display text-xl">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          This page does not exist or the restaurant is not active.
-        </p>
-        <Link to="/" className="btn-gold mt-6 inline-flex rounded-full px-6 py-2.5 text-sm">
-          Go home
-        </Link>
-      </div>
+    <div className="min-h-screen bg-black">
+      <Outlet />
     </div>
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  const router = useRouter();
-  useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
+// src/routes/_authenticated.admin.super-dashboard.tsx
+import { createFileRoute } from "@tanstack/react-router";
+import { requireSuperAdmin } from "@/middleware/roleMiddleware";
+import { motion } from "motion/react";
+import { Settings, Users, BarChart3, Video, FileText } from "lucide-react";
+
+export const Route = createFileRoute("/_authenticated/admin/super-dashboard")({
+  beforeLoad: ({ context }) => requireSuperAdmin(context),
+  component: SuperAdminDashboard,
+});
+
+export default function SuperAdminDashboard() {
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
-      <div className="glass max-w-md rounded-3xl p-10 text-center">
-        <h1 className="font-display text-xl">Something went wrong</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Please try again.</p>
-        <div className="mt-6 flex justify-center gap-2">
-          <button
-            onClick={() => { router.invalidate(); reset(); }}
-            className="btn-gold rounded-full px-5 py-2 text-sm"
-          >Try again</button>
-          <a href="/" className="rounded-full border border-border px-5 py-2 text-sm">Home</a>
+    <div className="min-h-screen bg-black text-white p-6">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-4xl font-bold mb-8">Super Admin Dashboard</h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Menu Management */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-6 rounded-2xl border border-gray-800 bg-gradient-to-br from-gray-900 to-black hover:border-gray-700 transition cursor-pointer"
+          >
+            <FileText className="w-8 h-8 text-yellow-400 mb-4" />
+            <h3 className="text-xl font-bold mb-2">Menu Designer</h3>
+            <p className="text-gray-600 text-sm">Create 1000+ templates</p>
+          </motion.div>
+
+          {/* Video Management */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="p-6 rounded-2xl border border-gray-800 bg-gradient-to-br from-gray-900 to-black hover:border-gray-700 transition cursor-pointer"
+          >
+            <Video className="w-8 h-8 text-blue-400 mb-4" />
+            <h3 className="text-xl font-bold mb-2">Promo Videos</h3>
+            <p className="text-gray-600 text-sm">Upload & manage videos</p>
+          </motion.div>
+
+          {/* User Management */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="p-6 rounded-2xl border border-gray-800 bg-gradient-to-br from-gray-900 to-black hover:border-gray-700 transition cursor-pointer"
+          >
+            <Users className="w-8 h-8 text-green-400 mb-4" />
+            <h3 className="text-xl font-bold mb-2">User Management</h3>
+            <p className="text-gray-600 text-sm">Manage restaurants & admins</p>
+          </motion.div>
+
+          {/* Settings */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="p-6 rounded-2xl border border-gray-800 bg-gradient-to-br from-gray-900 to-black hover:border-gray-700 transition cursor-pointer"
+          >
+            <Settings className="w-8 h-8 text-purple-400 mb-4" />
+            <h3 className="text-xl font-bold mb-2">Global Settings</h3>
+            <p className="text-gray-600 text-sm">App configuration</p>
+          </motion.div>
+
+          {/* Analytics */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="p-6 rounded-2xl border border-gray-800 bg-gradient-to-br from-gray-900 to-black hover:border-gray-700 transition cursor-pointer"
+          >
+            <BarChart3 className="w-8 h-8 text-red-400 mb-4" />
+            <h3 className="text-xl font-bold mb-2">Analytics</h3>
+            <p className="text-gray-600 text-sm">View reports & stats</p>
+          </motion.div>
+
+          {/* Gallery */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="p-6 rounded-2xl border border-gray-800 bg-gradient-to-br from-gray-900 to-black hover:border-gray-700 transition cursor-pointer"
+          >
+            <FileText className="w-8 h-8 text-pink-400 mb-4" />
+            <h3 className="text-xl font-bold mb-2">Gallery</h3>
+            <p className="text-gray-600 text-sm">Upload images & 3D models</p>
+          </motion.div>
+        </div>
+
+        {/* Role Badge */}
+        <div className="mt-8 p-4 rounded-lg bg-yellow-400/10 border border-yellow-400/30">
+          <p className="text-sm text-yellow-400">🔐 Super Admin Access Only</p>
         </div>
       </div>
     </div>
   );
 }
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
-    meta: [
-      { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { name: "theme-color", content: "#ffffff" },
-      { title: "BAT MENU — Smart Digital Menus For Every Food Business" },
-      { name: "description", content: "BAT MENU is a premium digital menu platform. Manage your restaurant menu with a permanent QR — no technical setup required." },
-      { name: "author", content: "BAT MENU" },
-      { property: "og:title", content: "BAT MENU — Smart Digital Menus For Every Food Business" },
-      { property: "og:description", content: "Premium digital menus with a permanent QR for every restaurant." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [
-      { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
-    ],
-  }),
-  shellComponent: RootShell,
-  component: RootComponent,
-  notFoundComponent: NotFoundComponent,
-  errorComponent: ErrorComponent,
+// src/routes/_authenticated.admin.restaurant-dashboard.tsx
+import { createFileRoute } from "@tanstack/react-router";
+import { requireRestaurantAdmin } from "@/middleware/roleMiddleware";
+
+export const Route = createFileRoute("/_authenticated/admin/restaurant-dashboard")({
+  beforeLoad: ({ context }) => requireRestaurantAdmin(context),
+  component: RestaurantDashboard,
 });
 
-function RootShell({ children }: { children: ReactNode }) {
+export default function RestaurantDashboard() {
   return (
-    <html lang="en">
-      <head><HeadContent /></head>
-      <body>{children}<Scripts /></body>
-    </html>
+    <div className="min-h-screen bg-black text-white p-6">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-4xl font-bold mb-8">Restaurant Admin Dashboard</h1>
+        <p className="text-gray-600">View your menu, manage items, and track orders</p>
+        {/* Restaurant specific features */}
+      </div>
+    </div>
   );
 }
 
-function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
-  const router = useRouter();
+// src/routes/unauthorized.tsx
+import { createFileRoute } from "@tanstack/react-router";
+import { motion } from "motion/react";
+import { Lock } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 
-  useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
-      router.invalidate();
-      if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
-    });
-    return () => sub.subscription.unsubscribe();
-  }, [router, queryClient]);
+export const Route = createFileRoute("/unauthorized")({
+  component: UnauthorizedPage,
+});
+
+export default function UnauthorizedPage() {
+  const navigate = useNavigate();
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <IntroGate>
-        <Outlet />
-      </IntroGate>
-      <Toaster theme="light" position="top-center" richColors closeButton />
-    </QueryClientProvider>
+    <div className="min-h-screen bg-black text-white flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="text-center"
+      >
+        <Lock className="w-16 h-16 mx-auto mb-4 text-red-400" />
+        <h1 className="text-4xl font-bold mb-2">Access Denied</h1>
+        <p className="text-gray-600 mb-6">You don't have permission to access this page</p>
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          onClick={() => navigate({ to: "/" })}
+          className="px-6 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-200"
+        >
+          Go Home
+        </motion.button>
+      </motion.div>
+    </div>
   );
-}
+              }
