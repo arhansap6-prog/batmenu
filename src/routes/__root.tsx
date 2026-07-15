@@ -1,18 +1,3 @@
-import { AuthContext } from "@/middleware/roleMiddleware";
-
-declare global {
-  interface LayoutGenerics {
-    context: AuthContext;
-  }
-}
-
-// beforeLoad mein yeh add kar:
-beforeLoad: async ({ context }) => {
-  if (context.user && !["super_admin", "restaurant_admin", "customer"].includes(context.user.role)) {
-    throw new Error("Invalid role");
-  }
-  return context;
-}
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
