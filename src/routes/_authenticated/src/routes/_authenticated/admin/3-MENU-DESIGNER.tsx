@@ -1,4 +1,4 @@
-// src/routes/_authenticated.admin.menu-designer.tsx
+
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "motion/react";
