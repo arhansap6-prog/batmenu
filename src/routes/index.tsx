@@ -16,5 +16,9 @@ export const Route = createFileRoute("/")({
     // No role yet — send to auth for bootstrap or re-login
     throw redirect({ to: "/auth" });
   },
-  component: () => null,
+  component: () => (
+  <div style={{padding:40}}>
+    BAT MENU HOME LOADED
+  </div>
+),
 });

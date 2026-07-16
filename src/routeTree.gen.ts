@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as _rootBackupRouteImport } from './routes/__root.backup'
 import { Route as UnauthorizedRouteImport } from './routes/unauthorized'
 import { Route as SplashRouteImport } from './routes/splash'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -32,6 +33,11 @@ import { Route as AuthenticatedAdminRestaurantsIndexRouteImport } from './routes
 import { Route as AuthenticatedAdminRestaurantsNewRouteImport } from './routes/_authenticated/admin.restaurants.new'
 import { Route as AuthenticatedAdminRestaurantsIdRouteImport } from './routes/_authenticated/admin.restaurants.$id'
 
+const _rootBackupRoute = _rootBackupRouteImport.update({
+  id: '/__root/backup',
+  path: '/backup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UnauthorizedRoute = UnauthorizedRouteImport.update({
   id: '/unauthorized',
   path: '/unauthorized',
@@ -159,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/splash': typeof SplashRoute
   '/unauthorized': typeof UnauthorizedRoute
+  '/backup': typeof _rootBackupRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/my-menu': typeof AuthenticatedMyMenuRoute
   '/super-admin-gallery': typeof AuthenticatedSuperAdminGalleryRoute
@@ -182,6 +189,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/splash': typeof SplashRoute
   '/unauthorized': typeof UnauthorizedRoute
+  '/backup': typeof _rootBackupRoute
   '/my-menu': typeof AuthenticatedMyMenuRoute
   '/super-admin-gallery': typeof AuthenticatedSuperAdminGalleryRoute
   '/m/$slug': typeof MSlugRoute
@@ -206,6 +214,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/splash': typeof SplashRoute
   '/unauthorized': typeof UnauthorizedRoute
+  '/__root/backup': typeof _rootBackupRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/my-menu': typeof AuthenticatedMyMenuRoute
   '/_authenticated/super-admin-gallery': typeof AuthenticatedSuperAdminGalleryRoute
@@ -231,6 +240,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/splash'
     | '/unauthorized'
+    | '/backup'
     | '/admin'
     | '/my-menu'
     | '/super-admin-gallery'
@@ -254,6 +264,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/splash'
     | '/unauthorized'
+    | '/backup'
     | '/my-menu'
     | '/super-admin-gallery'
     | '/m/$slug'
@@ -277,6 +288,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/splash'
     | '/unauthorized'
+    | '/__root/backup'
     | '/_authenticated/admin'
     | '/_authenticated/my-menu'
     | '/_authenticated/super-admin-gallery'
@@ -302,11 +314,19 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   SplashRoute: typeof SplashRoute
   UnauthorizedRoute: typeof UnauthorizedRoute
+  _rootBackupRoute: typeof _rootBackupRoute
   MSlugRoute: typeof MSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/__root/backup': {
+      id: '/__root/backup'
+      path: '/backup'
+      fullPath: '/backup'
+      preLoaderRoute: typeof _rootBackupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/unauthorized': {
       id: '/unauthorized'
       path: '/unauthorized'
@@ -521,6 +541,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   SplashRoute: SplashRoute,
   UnauthorizedRoute: UnauthorizedRoute,
+  _rootBackupRoute: _rootBackupRoute,
   MSlugRoute: MSlugRoute,
 }
 export const routeTree = rootRouteImport
