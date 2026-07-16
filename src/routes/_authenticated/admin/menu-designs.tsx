@@ -54,30 +54,42 @@ interface MenuTheme {
   };
 }
 
-const PRESET_THEMES = [
+const PRESET_THEMES: MenuTheme[] = [
   {
+    id: "luxury-black",
     name: "Luxury Black",
     category: "Premium",
+    restaurantId: "",
     background: { color: "#0a0a0a", type: "solid" },
     text: { primary: "#FFFFFF", secondary: "#FFD700", font: "Inter", size: 16 },
     cards: { bgColor: "#1a1a1a", borderColor: "#FFD700", shadowSize: "medium", borderRadius: 16, hoverEffect: "glow" },
     buttons: { bgColor: "#FFD700", textColor: "#000000", borderRadius: 8, style: "solid" },
+    animations: { transitionSpeed: "normal", particleEffect: false, parallax: false, fadeIn: true },
+    sections: { header: true, footer: true, categories: true, search: true, filters: true },
   },
   {
+    id: "modern-white",
     name: "Modern White",
     category: "Minimal",
+    restaurantId: "",
     background: { color: "#FFFFFF", type: "solid" },
     text: { primary: "#000000", secondary: "#666666", font: "Poppins", size: 14 },
     cards: { bgColor: "#F5F5F5", borderColor: "#E0E0E0", shadowSize: "small", borderRadius: 8, hoverEffect: "scale" },
     buttons: { bgColor: "#000000", textColor: "#FFFFFF", borderRadius: 6, style: "solid" },
+    animations: { transitionSpeed: "normal", particleEffect: false, parallax: false, fadeIn: true },
+    sections: { header: true, footer: true, categories: true, search: true, filters: true },
   },
   {
+    id: "restaurant-red",
     name: "Restaurant Red",
     category: "Food",
+    restaurantId: "",
     background: { color: "#1a0f0f", type: "solid" },
     text: { primary: "#FFFFFF", secondary: "#FF6B6B", font: "Roboto", size: 15 },
     cards: { bgColor: "#2a1a1a", borderColor: "#FF6B6B", shadowSize: "medium", borderRadius: 12, hoverEffect: "lift" },
     buttons: { bgColor: "#FF6B6B", textColor: "#FFFFFF", borderRadius: 8, style: "solid" },
+    animations: { transitionSpeed: "normal", particleEffect: false, parallax: false, fadeIn: true },
+    sections: { header: true, footer: true, categories: true, search: true, filters: true },
   },
 ];
 
@@ -126,7 +138,7 @@ export default function MenuDesignSystem() {
                 <div className="font-medium">{t.name}</div>
                 <div className="text-sm text-white/40">{t.category}</div>
               </div>
-              <div className="text-xs text-white/60 mb-2">Preview: {t.preview ?? "—"}</div>
+              <div className="text-xs text-white/60 mb-2">Preview: {t.background.color}</div>
               <div className="flex gap-2">
                 <button className="px-3 py-1 bg-white/5 rounded">Edit</button>
                 <button className="px-3 py-1 bg-white/5 rounded">Duplicate</button>
