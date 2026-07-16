@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "motion/react";
 
-export const Route = createFileRoute("/auth")({
+export const Route = createFileRoute("/_authenticated/src/routes/_authenticated/admin/auth")({
   component: AuthPage,
 });
 

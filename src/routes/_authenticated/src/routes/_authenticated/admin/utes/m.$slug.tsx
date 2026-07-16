@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { motion } from "motion/react";
 
-export const Route = createFileRoute("/menu/$slug")({
+export const Route = createFileRoute("/_authenticated/src/routes/_authenticated/admin/utes/m/$slug")({
   component: MenuPage,
 });
 

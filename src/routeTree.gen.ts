@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UnauthorizedRouteImport } from './routes/unauthorized'
 import { Route as SplashRouteImport } from './routes/splash'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppIntroRouteImport } from './routes/app-intro'
@@ -21,7 +22,9 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminVideosRouteImport } from './routes/_authenticated/admin.videos'
 import { Route as AuthenticatedAdminTemplatesRouteImport } from './routes/_authenticated/admin.templates'
+import { Route as AuthenticatedAdminSuperDashboardRouteImport } from './routes/_authenticated.admin.super-dashboard'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
+import { Route as AuthenticatedAdminRestaurantDashboardRouteImport } from './routes/_authenticated.admin.restaurant-dashboard'
 import { Route as AuthenticatedAdminQrRouteImport } from './routes/_authenticated/admin.qr'
 import { Route as AuthenticatedAdminMenuDesignsRouteImport } from './routes/_authenticated/admin/menu-designs'
 import { Route as AuthenticatedAdminDesignStudioRouteImport } from './routes/_authenticated/admin/design-studio'
@@ -31,6 +34,11 @@ import { Route as AuthenticatedAdminRestaurantsIdRouteImport } from './routes/_a
 import { Route as AuthenticatedSrcRoutesAuthenticatedAdminAuthRouteImport } from './routes/_authenticated/src/routes/_authenticated/admin/auth'
 import { Route as AuthenticatedSrcRoutesAuthenticatedAdminUtesMSlugRouteImport } from './routes/_authenticated/src/routes/_authenticated/admin/utes/m.$slug'
 
+const UnauthorizedRoute = UnauthorizedRouteImport.update({
+  id: '/unauthorized',
+  path: '/unauthorized',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SplashRoute = SplashRouteImport.update({
   id: '/splash',
   path: '/splash',
@@ -93,10 +101,22 @@ const AuthenticatedAdminTemplatesRoute =
     path: '/templates',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminSuperDashboardRoute =
+  AuthenticatedAdminSuperDashboardRouteImport.update({
+    id: '/super-dashboard',
+    path: '/super-dashboard',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminSettingsRoute =
   AuthenticatedAdminSettingsRouteImport.update({
     id: '/settings',
     path: '/settings',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminRestaurantDashboardRoute =
+  AuthenticatedAdminRestaurantDashboardRouteImport.update({
+    id: '/restaurant-dashboard',
+    path: '/restaurant-dashboard',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminQrRoute = AuthenticatedAdminQrRouteImport.update({
@@ -152,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/app-intro': typeof AppIntroRoute
   '/auth': typeof AuthRoute
   '/splash': typeof SplashRoute
+  '/unauthorized': typeof UnauthorizedRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/my-menu': typeof AuthenticatedMyMenuRoute
   '/super-admin-gallery': typeof AuthenticatedSuperAdminGalleryRoute
@@ -159,7 +180,9 @@ export interface FileRoutesByFullPath {
   '/admin/design-studio': typeof AuthenticatedAdminDesignStudioRoute
   '/admin/menu-designs': typeof AuthenticatedAdminMenuDesignsRoute
   '/admin/qr': typeof AuthenticatedAdminQrRoute
+  '/admin/restaurant-dashboard': typeof AuthenticatedAdminRestaurantDashboardRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin/super-dashboard': typeof AuthenticatedAdminSuperDashboardRoute
   '/admin/templates': typeof AuthenticatedAdminTemplatesRoute
   '/admin/videos': typeof AuthenticatedAdminVideosRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -174,13 +197,16 @@ export interface FileRoutesByTo {
   '/app-intro': typeof AppIntroRoute
   '/auth': typeof AuthRoute
   '/splash': typeof SplashRoute
+  '/unauthorized': typeof UnauthorizedRoute
   '/my-menu': typeof AuthenticatedMyMenuRoute
   '/super-admin-gallery': typeof AuthenticatedSuperAdminGalleryRoute
   '/m/$slug': typeof MSlugRoute
   '/admin/design-studio': typeof AuthenticatedAdminDesignStudioRoute
   '/admin/menu-designs': typeof AuthenticatedAdminMenuDesignsRoute
   '/admin/qr': typeof AuthenticatedAdminQrRoute
+  '/admin/restaurant-dashboard': typeof AuthenticatedAdminRestaurantDashboardRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin/super-dashboard': typeof AuthenticatedAdminSuperDashboardRoute
   '/admin/templates': typeof AuthenticatedAdminTemplatesRoute
   '/admin/videos': typeof AuthenticatedAdminVideosRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -197,6 +223,7 @@ export interface FileRoutesById {
   '/app-intro': typeof AppIntroRoute
   '/auth': typeof AuthRoute
   '/splash': typeof SplashRoute
+  '/unauthorized': typeof UnauthorizedRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/my-menu': typeof AuthenticatedMyMenuRoute
   '/_authenticated/super-admin-gallery': typeof AuthenticatedSuperAdminGalleryRoute
@@ -204,7 +231,9 @@ export interface FileRoutesById {
   '/_authenticated/admin/design-studio': typeof AuthenticatedAdminDesignStudioRoute
   '/_authenticated/admin/menu-designs': typeof AuthenticatedAdminMenuDesignsRoute
   '/_authenticated/admin/qr': typeof AuthenticatedAdminQrRoute
+  '/_authenticated/admin/restaurant-dashboard': typeof AuthenticatedAdminRestaurantDashboardRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/_authenticated/admin/super-dashboard': typeof AuthenticatedAdminSuperDashboardRoute
   '/_authenticated/admin/templates': typeof AuthenticatedAdminTemplatesRoute
   '/_authenticated/admin/videos': typeof AuthenticatedAdminVideosRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -221,6 +250,7 @@ export interface FileRouteTypes {
     | '/app-intro'
     | '/auth'
     | '/splash'
+    | '/unauthorized'
     | '/admin'
     | '/my-menu'
     | '/super-admin-gallery'
@@ -228,7 +258,9 @@ export interface FileRouteTypes {
     | '/admin/design-studio'
     | '/admin/menu-designs'
     | '/admin/qr'
+    | '/admin/restaurant-dashboard'
     | '/admin/settings'
+    | '/admin/super-dashboard'
     | '/admin/templates'
     | '/admin/videos'
     | '/admin/'
@@ -243,13 +275,16 @@ export interface FileRouteTypes {
     | '/app-intro'
     | '/auth'
     | '/splash'
+    | '/unauthorized'
     | '/my-menu'
     | '/super-admin-gallery'
     | '/m/$slug'
     | '/admin/design-studio'
     | '/admin/menu-designs'
     | '/admin/qr'
+    | '/admin/restaurant-dashboard'
     | '/admin/settings'
+    | '/admin/super-dashboard'
     | '/admin/templates'
     | '/admin/videos'
     | '/admin'
@@ -265,6 +300,7 @@ export interface FileRouteTypes {
     | '/app-intro'
     | '/auth'
     | '/splash'
+    | '/unauthorized'
     | '/_authenticated/admin'
     | '/_authenticated/my-menu'
     | '/_authenticated/super-admin-gallery'
@@ -272,7 +308,9 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/design-studio'
     | '/_authenticated/admin/menu-designs'
     | '/_authenticated/admin/qr'
+    | '/_authenticated/admin/restaurant-dashboard'
     | '/_authenticated/admin/settings'
+    | '/_authenticated/admin/super-dashboard'
     | '/_authenticated/admin/templates'
     | '/_authenticated/admin/videos'
     | '/_authenticated/admin/'
@@ -289,11 +327,19 @@ export interface RootRouteChildren {
   AppIntroRoute: typeof AppIntroRoute
   AuthRoute: typeof AuthRoute
   SplashRoute: typeof SplashRoute
+  UnauthorizedRoute: typeof UnauthorizedRoute
   MSlugRoute: typeof MSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/unauthorized': {
+      id: '/unauthorized'
+      path: '/unauthorized'
+      fullPath: '/unauthorized'
+      preLoaderRoute: typeof UnauthorizedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/splash': {
       id: '/splash'
       path: '/splash'
@@ -378,11 +424,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminTemplatesRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/super-dashboard': {
+      id: '/_authenticated/admin/super-dashboard'
+      path: '/super-dashboard'
+      fullPath: '/admin/super-dashboard'
+      preLoaderRoute: typeof AuthenticatedAdminSuperDashboardRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/settings': {
       id: '/_authenticated/admin/settings'
       path: '/settings'
       fullPath: '/admin/settings'
       preLoaderRoute: typeof AuthenticatedAdminSettingsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/restaurant-dashboard': {
+      id: '/_authenticated/admin/restaurant-dashboard'
+      path: '/restaurant-dashboard'
+      fullPath: '/admin/restaurant-dashboard'
+      preLoaderRoute: typeof AuthenticatedAdminRestaurantDashboardRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/qr': {
@@ -448,7 +508,9 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminDesignStudioRoute: typeof AuthenticatedAdminDesignStudioRoute
   AuthenticatedAdminMenuDesignsRoute: typeof AuthenticatedAdminMenuDesignsRoute
   AuthenticatedAdminQrRoute: typeof AuthenticatedAdminQrRoute
+  AuthenticatedAdminRestaurantDashboardRoute: typeof AuthenticatedAdminRestaurantDashboardRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
+  AuthenticatedAdminSuperDashboardRoute: typeof AuthenticatedAdminSuperDashboardRoute
   AuthenticatedAdminTemplatesRoute: typeof AuthenticatedAdminTemplatesRoute
   AuthenticatedAdminVideosRoute: typeof AuthenticatedAdminVideosRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
@@ -461,7 +523,10 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminDesignStudioRoute: AuthenticatedAdminDesignStudioRoute,
   AuthenticatedAdminMenuDesignsRoute: AuthenticatedAdminMenuDesignsRoute,
   AuthenticatedAdminQrRoute: AuthenticatedAdminQrRoute,
+  AuthenticatedAdminRestaurantDashboardRoute:
+    AuthenticatedAdminRestaurantDashboardRoute,
   AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
+  AuthenticatedAdminSuperDashboardRoute: AuthenticatedAdminSuperDashboardRoute,
   AuthenticatedAdminTemplatesRoute: AuthenticatedAdminTemplatesRoute,
   AuthenticatedAdminVideosRoute: AuthenticatedAdminVideosRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
@@ -501,6 +566,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppIntroRoute: AppIntroRoute,
   AuthRoute: AuthRoute,
   SplashRoute: SplashRoute,
+  UnauthorizedRoute: UnauthorizedRoute,
   MSlugRoute: MSlugRoute,
 }
 export const routeTree = rootRouteImport
