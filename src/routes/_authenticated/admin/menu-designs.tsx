@@ -94,7 +94,7 @@ const PRESET_THEMES: MenuTheme[] = [
 ];
 
 export default function MenuDesignSystem() {
-  const [themes, setThemes] = useState<MenuTheme[]>(PRESET_THEMES);
+  const [themes, setThemes] = useState<MenuTheme[]>(PRESET_THEMES as MenuTheme[]);
   const [selected, setSelected] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
   const [newThemeName, setNewThemeName] = useState("");

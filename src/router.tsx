@@ -10,8 +10,8 @@ import {
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "sonner";
 
-import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
+import appCss from "./styles.css?url";
+import { reportLovableError } from "./lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { IntroGate } from "@/components/intro-gate";
 
@@ -119,4 +119,8 @@ function RootComponent() {
       <Toaster theme="light" position="top-center" richColors closeButton />
     </QueryClientProvider>
   );
+}
+
+export function getRouter() {
+  return Route;
 }
