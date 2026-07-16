@@ -31,8 +31,6 @@ import { Route as AuthenticatedAdminDesignStudioRouteImport } from './routes/_au
 import { Route as AuthenticatedAdminRestaurantsIndexRouteImport } from './routes/_authenticated/admin.restaurants.index'
 import { Route as AuthenticatedAdminRestaurantsNewRouteImport } from './routes/_authenticated/admin.restaurants.new'
 import { Route as AuthenticatedAdminRestaurantsIdRouteImport } from './routes/_authenticated/admin.restaurants.$id'
-import { Route as AuthenticatedSrcRoutesAuthenticatedAdminAuthRouteImport } from './routes/_authenticated/src/routes/_authenticated/admin/auth'
-import { Route as AuthenticatedSrcRoutesAuthenticatedAdminUtesMSlugRouteImport } from './routes/_authenticated/src/routes/_authenticated/admin/utes/m.$slug'
 
 const UnauthorizedRoute = UnauthorizedRouteImport.update({
   id: '/unauthorized',
@@ -154,18 +152,6 @@ const AuthenticatedAdminRestaurantsIdRoute =
     path: '/restaurants/$id',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
-const AuthenticatedSrcRoutesAuthenticatedAdminAuthRoute =
-  AuthenticatedSrcRoutesAuthenticatedAdminAuthRouteImport.update({
-    id: '/src/routes/_authenticated/admin/auth',
-    path: '/src/routes/admin/auth',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedSrcRoutesAuthenticatedAdminUtesMSlugRoute =
-  AuthenticatedSrcRoutesAuthenticatedAdminUtesMSlugRouteImport.update({
-    id: '/src/routes/_authenticated/admin/utes/m/$slug',
-    path: '/src/routes/admin/utes/m/$slug',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -189,8 +175,6 @@ export interface FileRoutesByFullPath {
   '/admin/restaurants/$id': typeof AuthenticatedAdminRestaurantsIdRoute
   '/admin/restaurants/new': typeof AuthenticatedAdminRestaurantsNewRoute
   '/admin/restaurants/': typeof AuthenticatedAdminRestaurantsIndexRoute
-  '/src/routes/admin/auth': typeof AuthenticatedSrcRoutesAuthenticatedAdminAuthRoute
-  '/src/routes/admin/utes/m/$slug': typeof AuthenticatedSrcRoutesAuthenticatedAdminUtesMSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -213,8 +197,6 @@ export interface FileRoutesByTo {
   '/admin/restaurants/$id': typeof AuthenticatedAdminRestaurantsIdRoute
   '/admin/restaurants/new': typeof AuthenticatedAdminRestaurantsNewRoute
   '/admin/restaurants': typeof AuthenticatedAdminRestaurantsIndexRoute
-  '/src/routes/admin/auth': typeof AuthenticatedSrcRoutesAuthenticatedAdminAuthRoute
-  '/src/routes/admin/utes/m/$slug': typeof AuthenticatedSrcRoutesAuthenticatedAdminUtesMSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -240,8 +222,6 @@ export interface FileRoutesById {
   '/_authenticated/admin/restaurants/$id': typeof AuthenticatedAdminRestaurantsIdRoute
   '/_authenticated/admin/restaurants/new': typeof AuthenticatedAdminRestaurantsNewRoute
   '/_authenticated/admin/restaurants/': typeof AuthenticatedAdminRestaurantsIndexRoute
-  '/_authenticated/src/routes/_authenticated/admin/auth': typeof AuthenticatedSrcRoutesAuthenticatedAdminAuthRoute
-  '/_authenticated/src/routes/_authenticated/admin/utes/m/$slug': typeof AuthenticatedSrcRoutesAuthenticatedAdminUtesMSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -267,8 +247,6 @@ export interface FileRouteTypes {
     | '/admin/restaurants/$id'
     | '/admin/restaurants/new'
     | '/admin/restaurants/'
-    | '/src/routes/admin/auth'
-    | '/src/routes/admin/utes/m/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -291,8 +269,6 @@ export interface FileRouteTypes {
     | '/admin/restaurants/$id'
     | '/admin/restaurants/new'
     | '/admin/restaurants'
-    | '/src/routes/admin/auth'
-    | '/src/routes/admin/utes/m/$slug'
   id:
     | '__root__'
     | '/'
@@ -317,8 +293,6 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/restaurants/$id'
     | '/_authenticated/admin/restaurants/new'
     | '/_authenticated/admin/restaurants/'
-    | '/_authenticated/src/routes/_authenticated/admin/auth'
-    | '/_authenticated/src/routes/_authenticated/admin/utes/m/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -487,20 +461,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRestaurantsIdRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/_authenticated/src/routes/_authenticated/admin/auth': {
-      id: '/_authenticated/src/routes/_authenticated/admin/auth'
-      path: '/src/routes/admin/auth'
-      fullPath: '/src/routes/admin/auth'
-      preLoaderRoute: typeof AuthenticatedSrcRoutesAuthenticatedAdminAuthRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/src/routes/_authenticated/admin/utes/m/$slug': {
-      id: '/_authenticated/src/routes/_authenticated/admin/utes/m/$slug'
-      path: '/src/routes/admin/utes/m/$slug'
-      fullPath: '/src/routes/admin/utes/m/$slug'
-      preLoaderRoute: typeof AuthenticatedSrcRoutesAuthenticatedAdminUtesMSlugRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
   }
 }
 
@@ -543,18 +503,12 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedMyMenuRoute: typeof AuthenticatedMyMenuRoute
   AuthenticatedSuperAdminGalleryRoute: typeof AuthenticatedSuperAdminGalleryRoute
-  AuthenticatedSrcRoutesAuthenticatedAdminAuthRoute: typeof AuthenticatedSrcRoutesAuthenticatedAdminAuthRoute
-  AuthenticatedSrcRoutesAuthenticatedAdminUtesMSlugRoute: typeof AuthenticatedSrcRoutesAuthenticatedAdminUtesMSlugRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedMyMenuRoute: AuthenticatedMyMenuRoute,
   AuthenticatedSuperAdminGalleryRoute: AuthenticatedSuperAdminGalleryRoute,
-  AuthenticatedSrcRoutesAuthenticatedAdminAuthRoute:
-    AuthenticatedSrcRoutesAuthenticatedAdminAuthRoute,
-  AuthenticatedSrcRoutesAuthenticatedAdminUtesMSlugRoute:
-    AuthenticatedSrcRoutesAuthenticatedAdminUtesMSlugRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
