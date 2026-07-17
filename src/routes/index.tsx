@@ -1,303 +1,366 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { motion } from "motion/react";
-import { Link } from "@tanstack/react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { motion, AnimatePresence } from "motion/react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { 
-  Plus, 
-  QrCode, 
-  UtensilsCrossed, 
-  ShoppingCart, 
-  BarChart3, 
-  Settings,
-  ArrowRight,
-  Zap,
-  Shield,
-  Sparkles
-} from "lucide-react";
+import { BatLogo } from "@/lib/brand";
+import { ArrowRight, Lock, Mail, Shield } from "lucide-react";
 
 export const Route = createFileRoute("/")({
-  component: HomePage,
+ssr: false,
+component: LandingPage,
 });
 
-export default function HomePage() {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+function LandingPage() {
+const navigate = useNavigate();
+const [hasSuper, setHasSuper] = useState<boolean | null>(null);
+const [panel, setPanel] = useState<"owner" | "super">("owner");
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
+const [confirm, setConfirm] = useState("");
+const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        setUser(session?.user || null);
-      } catch (error) {
-        console.error("Auth check failed:", error);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
+// Route already-signed-in users to their dashboard.
+useEffect(() => {
+let cancelled = false;
+(async () => {
+const [{ data: sess }, { data: exists }] = await Promise.all([
+supabase.auth.getSession(),
+supabase.rpc("super_admin_exists"),
+]);
+if (cancelled) return;
+setHasSuper(Boolean(exists));
+const user = sess.session?.user;
+if (user) {
+const { data: role } = await supabase
+.from("user_roles").select("role").eq("user_id", user.id).maybeSingle();
+if (cancelled) return;
+if (role?.role === "super_admin") navigate({ to: "/admin" });
+else if (role?.role === "restaurant_admin") navigate({ to: "/my-menu" });
+}
+})();
+return () => { cancelled = true; };
+}, [navigate]);
 
-    checkAuth();
+const mode: "login" | "bootstrap" =
+panel === "super" && hasSuper === false ? "bootstrap" : "login";
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user || null);
-      }
-    );
+async function onSubmit(e: React.FormEvent) {
+e.preventDefault();
+setBusy(true);
+try {
+if (mode === "bootstrap") {
+if (password !== confirm) throw new Error("Passwords do not match");
+const { error: signUpErr } = await supabase.auth.signUp({ email, password });
+if (signUpErr) throw signUpErr;
+const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+if (signInErr) throw signInErr;
+const { error: claimErr } = await supabase.rpc("claim_super_admin");
+if (claimErr) throw claimErr;
+toast.success("Super Admin created");
+navigate({ to: "/admin" });
+return;
+}
+const { error } = await supabase.auth.signInWithPassword({ email, password });
+if (error) throw error;
+const { data: { user } } = await supabase.auth.getUser();
+const { data: role } = await supabase
+.from("user_roles").select("role").eq("user_id", user!.id).maybeSingle();
+toast.success("Welcome back");
+if (role?.role === "super_admin") navigate({ to: "/admin" });
+else if (role?.role === "restaurant_admin") navigate({ to: "/my-menu" });
+else navigate({ to: "/" });
+} catch (err) {
+toast.error(err instanceof Error ? err.message : "Sign in failed");
+} finally { setBusy(false); }
+}
 
-    return () => subscription?.unsubscribe();
-  }, []);
+return (
+<div className="relative min-h-dvh overflow-hidden bg-black text-white">
+<CinematicBackdrop />
+<ArhxyWordmark />
+<Particles />
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-black via-gray-950 to-black flex items-center justify-center">
-        <div className="text-white text-center">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="inline-block"
-          >
-            <div className="w-12 h-12 border-4 border-gray-800 border-t-white rounded-full"></div>
-          </motion.div>
-          <p className="mt-4 text-gray-400">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+{/* Vignette */}  
+  <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(120%_80%_at_50%_10%,transparent_0%,rgba(0,0,0,0.55)_60%,rgba(0,0,0,0.9)_100%)]" />  
 
-  // Not logged in - show landing page
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-black via-gray-950 to-black text-white overflow-hidden">
-        {/* Background effects */}
-        <div className="fixed inset-0 -z-10">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-yellow-400/5 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-yellow-400/5 rounded-full blur-3xl"></div>
-        </div>
+  <main className="relative z-10 mx-auto flex min-h-dvh w-full max-w-6xl flex-col px-5 pb-10 pt-8 sm:px-8">  
+    {/* Top brand bar */}  
+    <header className="flex items-center justify-between">  
+      <div className="flex items-center gap-2.5">  
+        <BatLogo className="h-7 w-7 text-white" />  
+        <span className="font-display text-lg tracking-tight">  
+          BAT <span className="opacity-60">MENU</span>  
+        </span>  
+      </div>  
+      <div className="hidden items-center gap-2 text-[10px] uppercase tracking-[0.28em] text-white/50 sm:flex">  
+        <span className="h-1 w-1 rounded-full bg-white/60" />  
+        Luxury Digital Menus  
+      </div>  
+    </header>  
 
-        {/* Navigation */}
-        <nav className="sticky top-0 z-40 bg-black/50 backdrop-blur-xl border-b border-gray-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-3xl">🍕</span>
-              <span className="text-2xl font-bold">BAT MENU</span>
-            </div>
-            <Link
-              to="/auth"
-              className="px-6 py-2 bg-white text-black rounded-full font-semibold text-sm hover:bg-gray-200 transition"
-            >
-              Login
-            </Link>
-          </div>
-        </nav>
+    {/* Hero + login */}  
+    <div className="mt-8 grid flex-1 items-center gap-10 lg:mt-14 lg:grid-cols-[1.05fr_minmax(320px,420px)]">  
+      {/* Left: hero copy */}  
+      <motion.div  
+        initial={{ opacity: 0, y: 24 }}  
+        animate={{ opacity: 1, y: 0 }}  
+        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}  
+        className="max-w-xl"  
+      >  
+        <p className="text-[10px] uppercase tracking-[0.4em] text-white/50">  
+          Presented by ARHXY  
+        </p>  
+        <h1 className="mt-5 font-display text-[44px] leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">  
+          A menu, <br />  
+          <span className="italic text-white/90">reimagined.</span>  
+        </h1>  
+        <p className="mt-6 max-w-md text-sm leading-relaxed text-white/60 sm:text-base">  
+          BAT MENU turns every restaurant into a premium digital experience —  
+          a single luxurious QR that opens a beautifully designed menu, updated in real time.  
+        </p>  
 
-        {/* Hero Section */}
-        <motion.section
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8 }}
-          className="max-w-7xl mx-auto px-4 sm:px-6 py-20"
-        >
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            {/* Left Content */}
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <div className="mb-6 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-yellow-400" />
-                <span className="text-sm text-yellow-400 font-medium">PREMIUM DIGITAL MENUS</span>
-              </div>
+        <div className="mt-8 flex flex-wrap items-center gap-4 text-[10px] uppercase tracking-[0.3em] text-white/45">  
+          <Badge>Fine Dining</Badge>  
+          <Badge>Cafés</Badge>  
+          <Badge>Cloud Kitchens</Badge>  
+          <Badge>Bakeries</Badge>  
+        </div>  
+      </motion.div>  
 
-              <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-                Transform Your Restaurant Menu
-              </h1>
-              
-              <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-                One permanent QR code. Beautiful digital menus. AR food preview. Real-time analytics. Everything restaurants need to succeed in 2025.
-              </p>
+      {/* Right: glass login */}  
+      <motion.div  
+        initial={{ opacity: 0, y: 24, scale: 0.98 }}  
+        animate={{ opacity: 1, y: 0, scale: 1 }}  
+        transition={{ duration: 1, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}  
+        className="relative"  
+      >  
+        <div className="absolute -inset-px rounded-[28px] bg-gradient-to-b from-white/25 via-white/10 to-white/5 opacity-70 blur-md" />  
+        <div  
+          className="relative rounded-[26px] border border-white/15 bg-white/[0.06] p-7 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)] sm:p-8"  
+          style={{ backdropFilter: "blur(28px) saturate(160%)" }}  
+        >  
+          {/* Tabs */}  
+          <div className="mb-6 flex items-center justify-between">  
+            <div>  
+              <p className="text-[10px] uppercase tracking-[0.32em] text-white/50">  
+                {panel === "owner" ? "Restaurant Access" : "Super Admin"}  
+              </p>  
+              <h2 className="mt-1.5 font-display text-2xl leading-tight">  
+                {mode === "bootstrap" ? "Create Super Admin" : "Sign in"}  
+              </h2>  
+            </div>  
+            <div className="rounded-full border border-white/15 bg-white/5 p-1 text-[10px]">  
+              <button  
+                onClick={() => setPanel("owner")}  
+                className={`rounded-full px-3 py-1.5 uppercase tracking-widest transition ${  
+                  panel === "owner" ? "bg-white text-black" : "text-white/60"  
+                }`}  
+              >Owner</button>  
+              <button  
+                onClick={() => setPanel("super")}  
+                className={`rounded-full px-3 py-1.5 uppercase tracking-widest transition ${  
+                  panel === "super" ? "bg-white text-black" : "text-white/60"  
+                }`}  
+              >Super</button>  
+            </div>  
+          </div>  
 
-              <div className="flex flex-col sm:flex-row gap-4 mb-12">
-                <Link
-                  to="/auth"
-                  className="px-8 py-4 bg-white text-black rounded-lg font-bold text-lg hover:bg-gray-200 transition flex items-center justify-center gap-2"
-                >
-                  Get Started <ArrowRight size={20} />
-                </Link>
-                <button className="px-8 py-4 border-2 border-gray-700 text-white rounded-lg font-bold hover:bg-gray-900 transition">
-                  Watch Demo
-                </button>
-              </div>
+          <AnimatePresence mode="wait">  
+            <motion.form  
+              key={`${panel}-${mode}`}  
+              initial={{ opacity: 0, y: 8 }}  
+              animate={{ opacity: 1, y: 0 }}  
+              exit={{ opacity: 0, y: -8 }}  
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}  
+              onSubmit={onSubmit}  
+              className="space-y-4"  
+            >  
+              <GlassField  
+                icon={<Mail className="h-4 w-4" />}  
+                label="Email"  
+                type="email"  
+                value={email}  
+                onChange={setEmail}  
+                autoComplete="email"  
+              />  
+              <GlassField  
+                icon={<Lock className="h-4 w-4" />}  
+                label="Password"  
+                type="password"  
+                value={password}  
+                onChange={setPassword}  
+                autoComplete={mode === "bootstrap" ? "new-password" : "current-password"}  
+                minLength={mode === "bootstrap" ? 8 : undefined}  
+              />  
+              {mode === "bootstrap" && (  
+                <GlassField  
+                  icon={<Shield className="h-4 w-4" />}  
+                  label="Confirm password"  
+                  type="password"  
+                  value={confirm}  
+                  onChange={setConfirm}  
+                  autoComplete="new-password"  
+                  minLength={8}  
+                />  
+              )}  
 
-              {/* Stats */}
-              <div className="flex gap-8">
-                <div>
-                  <div className="text-3xl font-bold text-yellow-400">500+</div>
-                  <div className="text-sm text-gray-400">Restaurants</div>
-                </div>
-                <div>
-                  <div className="text-3xl font-bold text-yellow-400">10M+</div>
-                  <div className="text-sm text-gray-400">QR Scans</div>
-                </div>
-                <div>
-                  <div className="text-3xl font-bold text-yellow-400">99.9%</div>
-                  <div className="text-sm text-gray-400">Uptime</div>
-                </div>
-              </div>
-            </motion.div>
+              <button  
+                type="submit"  
+                disabled={busy}  
+                className="group mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-white py-3.5 text-sm font-medium text-black transition hover:bg-white/90 disabled:opacity-60"  
+              >  
+                {busy ? "Please wait…" : mode === "bootstrap" ? "Create Super Admin" : "Enter"}  
+                <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />  
+              </button>  
 
-            {/* Right - Feature Cards */}
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-              className="space-y-4"
-            >
-              {[
-                { icon: Zap, title: "Lightning Fast", desc: "Load in <2 seconds" },
-                { icon: Shield, title: "Enterprise Secure", desc: "Bank-level encryption" },
-                { icon: BarChart3, title: "Real Analytics", desc: "Live insights & trends" },
-              ].map((feature, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 + i * 0.1 }}
-                  className="p-6 rounded-2xl bg-gradient-to-br from-gray-900 to-gray-950 border border-gray-800 hover:border-gray-700 transition"
-                >
-                  <feature.icon className="w-8 h-8 text-yellow-400 mb-3" />
-                  <h3 className="font-bold text-lg mb-2">{feature.title}</h3>
-                  <p className="text-gray-400 text-sm">{feature.desc}</p>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </motion.section>
+              <p className="pt-1 text-center text-[10px] uppercase tracking-[0.28em] text-white/40">  
+                {panel === "owner"  
+                  ? "Restaurant owners — contact your Super Admin for access"  
+                  : mode === "bootstrap"  
+                  ? "First-time setup — one account only"  
+                  : "Reserved for the ARHXY administrator"}  
+              </p>  
+            </motion.form>  
+          </AnimatePresence>  
+        </div>  
+      </motion.div>  
+    </div>  
 
-        {/* Features Grid */}
-        <motion.section
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          className="max-w-7xl mx-auto px-4 sm:px-6 py-20 border-t border-gray-800"
-        >
-          <h2 className="text-5xl font-bold mb-12 text-center">Why Choose BAT MENU?</h2>
+    <footer className="mt-10 flex items-center justify-between text-[10px] uppercase tracking-[0.3em] text-white/35">  
+      <span>© {new Date().getFullYear()} ARHXY</span>  
+      <span>Smart Digital Menus</span>  
+    </footer>  
+  </main>  
+</div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { emoji: "📱", title: "Permanent QR", desc: "Never changes - print once, use forever" },
-              { emoji: "🎨", title: "200+ Templates", desc: "Pre-designed for every restaurant type" },
-              { emoji: "🍕", title: "AR Preview", desc: "Customers see 3D food on their table" },
-              { emoji: "📊", title: "Analytics", desc: "Real-time insights on menu performance" },
-              { emoji: "🎥", title: "Promo Videos", desc: "Auto-play before menu loads" },
-              { emoji: "🔐", title: "Super Admin", desc: "Manage unlimited restaurants" },
-            ].map((feature, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1 + i * 0.08 }}
-                className="p-8 rounded-2xl bg-gradient-to-br from-gray-900/50 to-gray-950/50 border border-gray-800 hover:border-yellow-400/30 transition hover:bg-gray-900/70"
-              >
-                <div className="text-5xl mb-4">{feature.emoji}</div>
-                <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
-                <p className="text-gray-400">{feature.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.section>
+);
+}
 
-        {/* CTA Section */}
-        <motion.section
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.2 }}
-          className="max-w-4xl mx-auto px-4 sm:px-6 py-20 text-center border-t border-gray-800"
-        >
-          <h2 className="text-5xl font-bold mb-6">Ready to Transform Your Restaurant?</h2>
-          <p className="text-xl text-gray-300 mb-8">Join 500+ restaurants using BAT MENU</p>
-          <Link
-            to="/auth"
-            className="inline-block px-10 py-4 bg-white text-black rounded-lg font-bold text-lg hover:bg-gray-200 transition"
-          >
-            Start Free Trial
-          </Link>
-        </motion.section>
+function Badge({ children }: { children: React.ReactNode }) {
+return (
+<span className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5">
+{children}
+</span>
+);
+}
 
-        {/* Footer */}
-        <footer className="border-t border-gray-800 bg-black/50 backdrop-blur-xl">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 text-center text-gray-600">
-            <p>© 2026 BAT MENU • Powered by ARHXY</p>
-          </div>
-        </footer>
-      </div>
-    );
-  }
+function GlassField(props: {
+label: string; type?: string; value: string; onChange: (v: string) => void;
+autoComplete?: string; minLength?: number; icon?: React.ReactNode;
+}) {
+return (
+<label className="block">
+<span className="mb-1.5 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.28em] text-white/50">
+{props.icon}{props.label}
+</span>
+<input
+type={props.type ?? "text"}
+value={props.value}
+onChange={(e) => props.onChange(e.target.value)}
+autoComplete={props.autoComplete}
+minLength={props.minLength}
+required
+className="w-full rounded-2xl border border-white/12 bg-black/30 px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-white/40 focus:ring-2 focus:ring-white/10"
+/>
+</label>
+);
+}
 
-  // Logged in - show dashboard entry
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-950 to-black text-white">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-40 bg-black/50 backdrop-blur-xl border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-3xl">🍕</span>
-            <span className="text-2xl font-bold">BAT MENU</span>
-          </div>
-          <button
-            onClick={() => supabase.auth.signOut()}
-            className="px-6 py-2 bg-gray-800 text-white rounded-full font-semibold text-sm hover:bg-gray-700 transition"
-          >
-            Logout
-          </button>
-        </div>
-      </nav>
+/* ----------------- Cinematic backdrop pieces ----------------- */
 
-      {/* Dashboard */}
-      <motion.section
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.8 }}
-        className="max-w-7xl mx-auto px-4 sm:px-6 py-20"
-      >
-        <div className="mb-12">
-          <h1 className="text-5xl font-bold mb-2">Welcome to BAT MENU</h1>
-          <p className="text-xl text-gray-400">Restaurant Management Dashboard</p>
-        </div>
+function CinematicBackdrop() {
+return (
+<>
+{/* Slow luminous gradient /}
+<motion.div
+className="pointer-events-none absolute inset-0 z-0"
+initial={{ opacity: 0 }}
+animate={{ opacity: 1 }}
+transition={{ duration: 1.2 }}
+style={{
+background:
+"radial-gradient(60% 50% at 20% 20%, rgba(255,255,255,0.10), transparent 60%)," +
+"radial-gradient(50% 50% at 85% 15%, rgba(255,255,255,0.06), transparent 60%)," +
+"radial-gradient(70% 60% at 50% 100%, rgba(255,255,255,0.05), transparent 60%)," +
+"linear-gradient(180deg, #050505 0%, #0a0a0a 60%, #000 100%)",
+}}
+/>
+{/ Grain /}
+<div
+className="pointer-events-none absolute inset-0 z-[1] opacity-[0.06] mix-blend-overlay"
+style={{
+backgroundImage:
+"radial-gradient(rgba(255,255,255,0.8) 1px, transparent 1px)",
+backgroundSize: "3px 3px",
+}}
+/>
+{/ Slow drifting sheen */}
+<motion.div
+className="pointer-events-none absolute -inset-x-40 top-1/3 z-[1] h-[40vh] opacity-[0.08] blur-3xl"
+style={{ background: "linear-gradient(90deg, transparent, #fff, transparent)" }}
+animate={{ x: ["-10%", "10%", "-10%"] }}
+transition={{ duration: 18, ease: "easeInOut", repeat: Infinity }}
+/>
+</>
+);
+}
 
-        {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            { icon: Plus, title: "Create Menu", desc: "Build your digital menu", href: "#" },
-            { icon: QrCode, title: "QR Menu", desc: "Manage QR codes", href: "#" },
-            { icon: UtensilsCrossed, title: "Food Items", desc: "Add & edit food", href: "#" },
-            { icon: ShoppingCart, title: "Orders", desc: "View all orders", href: "#" },
-            { icon: BarChart3, title: "Analytics", desc: "View insights", href: "#" },
-            { icon: Settings, title: "Settings", desc: "Configure restaurant", href: "#" },
-          ].map((action, i) => (
-            <motion.a
-              key={i}
-              href={action.href}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 + i * 0.08 }}
-              className="p-8 rounded-2xl bg-gradient-to-br from-gray-900 to-gray-950 border border-gray-800 hover:border-yellow-400/50 transition hover:bg-gray-900/80 cursor-pointer group"
-            >
-              <action.icon className="w-12 h-12 text-yellow-400 mb-4 group-hover:scale-110 transition" />
-              <h3 className="text-xl font-bold mb-2">{action.title}</h3>
-              <p className="text-gray-400">{action.desc}</p>
-            </motion.a>
-          ))}
-        </div>
-      </motion.section>
+function ArhxyWordmark() {
+return (
+<motion.div
+initial={{ opacity: 0, scale: 1.02 }}
+animate={{ opacity: 0.06, scale: 1 }}
+transition={{ duration: 2, ease: [0.22, 1, 0.36, 1] }}
+className="pointer-events-none absolute inset-x-0 top-1/2 z-[1] -translate-y-1/2 select-none text-center"
+>
+<div
+className="font-display leading-none tracking-[0.02em]"
+style={{
+fontSize: "clamp(180px, 30vw, 520px)",
+background: "linear-gradient(180deg, #ffffff 0%, rgba(255,255,255,0.2) 100%)",
+WebkitBackgroundClip: "text",
+WebkitTextFillColor: "transparent",
+filter: "blur(0.5px)",
+}}
+>
+ARHXY
+</div>
+</motion.div>
+);
+}
 
-      {/* Footer */}
-      <footer className="border-t border-gray-800 bg-black/50 backdrop-blur-xl mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 text-center text-gray-600">
-          <p>© 2026 BAT MENU • Powered by ARHXY</p>
-        </div>
-      </footer>
-    </div>
-  );
-        }
+function Particles() {
+const seed = useRef(Math.random());
+const dots = useMemo(() => {
+const s = seed.current;
+return Array.from({ length: 26 }, (_, i) => {
+const x = ((i * 97 + s * 1000) % 100);
+const y = ((i * 53 + s * 700) % 100);
+const size = 1 + ((i * 13) % 3);
+const dur = 10 + ((i * 7) % 16);
+const delay = (i * 0.4) % 6;
+return { x, y, size, dur, delay };
+});
+}, []);
+return (
+<div className="pointer-events-none absolute inset-0 z-[2]">
+{dots.map((d, i) => (
+<motion.span
+key={i}
+className="absolute rounded-full bg-white"
+style={{
+left: ${d.x}%,
+top: ${d.y}%,
+width: d.size,
+height: d.size,
+opacity: 0.35,
+boxShadow: "0 0 8px rgba(255,255,255,0.6)",
+}}
+animate={{ y: [0, -18, 0], opacity: [0.15, 0.55, 0.15] }}
+transition={{ duration: d.dur, delay: d.delay, repeat: Infinity, ease: "easeInOut" }}
+/>
+))}
+</div>
+);
+               }
